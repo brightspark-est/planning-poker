@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Planning Poker</title>
+        
+        <style type="text/css">
+            
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+            
+            div, ul, li {
+                box-sizing: border-box;
+            }
+            
+            .template {
+                display: none;
+            }
+
+            #hand ul {
+                padding: 0;
+                margin: 0;
+                list-style: none;
+                margin-left: auto;
+                margin-right: auto;
+                margin-bottom: 20px;
+            }
+
+            #players .bet {
+                display: none;
+            }
+
+            #players li.ready {
+                background: #090;
+                color: #fff;
+            }
+
+            #players.turn .bet {
+                display: initial;
+            }
+
+            #hand li {
+                font-size: 20pt;
+                float: left;
+                width: 100px;
+                line-height: 150px;
+                text-align: center;
+                border: 1px solid #aaa;
+                margin-right: 20px;
+                cursor: pointer;
+                transition: background 0.2s, color 0.2s;
+            }
+
+            #hand li:hover {
+                background: #aaa;
+            }
+
+            #hand li.selected {
+                color: #fff;
+                background: #555;
+            }
+
+            #hand li:last-child {
+                margin: 0;
+            }
+
+            #hand ul:after {
+
+                content: " ";
+                display: table;
+                clear: both
+            }
+
+        </style>
+        
+        
+        <!-- jQuery is only for signalR -->
+        <script src="http://localhost/PlanningPoker.Server/Scripts/jquery-1.10.2.min.js"></script>
+        <script src="http://localhost/PlanningPoker.Server/Scripts/jquery.signalR-2.2.0.min.js"></script>
+        <script src="http://localhost/PlanningPoker.Server/signalr/hubs"></script>
+        <script src="core.js"></script>
+        
+    </head>
+
+    <body>
+
+        <div id="page1">        
+            <form id="join-form">
+
+                <input type="text" id="name"/>
+                <button type="submit">Join</button>
+
+            </form>
+        </div>
+
+        <div id="page2">
+            Players
+            <ul id="players">
+                <li class="template">
+                    <span class="name"></span>
+                    <span class="bet"></span>
+                </li>
+            </ul>
+
+            <div id="hand">
+
+                <ul class="low">
+                    <li>0</li>
+                    <li>1/2</li>
+                    <li>1</li>
+                    <li>2</li>
+                    <li>3</li>
+                    <li>5</li>
+                    <li>8</li>
+                </ul>
+
+                <ul class="high">
+                    <li>13</li>
+                    <li>20</li>
+                    <li>40</li>
+                    <li>100</li>
+                    <li>?</li>
+                    <li>&#x221e;</li>
+                </ul>
+
+            </div>
+
+            <button id="reset">Reset</button>
+        </div>
+        
+        <script type="text/javascript">
+
+            var x = {};
+            Observable.call(x);
+
+            var Player = function(cid, name) {
+
+                var _this = this;
+                Observable.call(_this);
+                
+                var _cid = cid;
+                var _name = name;
+                var _bet;
+                var _hasMadeBet = false;
+
+                /*
+                _this.propertyChanged = function () {
+                    
+                    // x.publishSubscribe(propertyChanged)
+                    _this.publishSubscribe("propertyChanged", arguments)
+                }
+                */
+                
+                var _props = {
+                    cid: {
+                        get: function() {
+                            return _cid;
+                        }
+                    },
+                    name: {
+                        get: function() {
+                            return _name;
+                        },
+                        set: function (val) {
+                            if (val === _name) {
+                                return;
+                            }
+
+                            var prevVal = _name;
+                            _name = val;
+                            _this.propertyChanged("name", _name, prevVal);
+                        }
+                    },
+                    bet: {
+                        get: function() {
+                            return _bet;
+                        },
+                        set: function (val) {
+                            if (val === _bet) {
+                                return;
+                            }
+
+                            var prevVal = _bet;
+                            _bet = val;
+                            _this.propertyChanged("bet", _bet, prevVal);
+                        }
+                    },
+                    hasMadeBet: {
+                        get: function () {
+                            return _hasMadeBet;
+                        },
+                        set: function (val) {
+                            if (val === _hasMadeBet) {
+                                return;
+                            }
+                            
+                            var prevVal = _hasMadeBet;
+                            _hasMadeBet = val;
+                            _this.propertyChanged("hasMadeBet", _hasMadeBet, prevVal);
+                        }
+                    }
+                }
+
+                Object.defineProperties(this, _props);
+            };
+            /*
+            var playerView = new (function (template) {
+               
+               var li;
+               
+               Player.propertyChanged("name", funciton (val, oldVal) {
+                  
+                  
+                   
+               });
+               
+               Player.propertyChanged("bet", funciton (val, oldVal) {
+                  _el_bet.innerHTML = val;
+               });
+                
+            });
+            */
+            
+            var playersList = new (function() {
+                
+                Observable.call(this);
+                var _this = this;
+                var _players = {};
+
+                //
+                this.get = function (cid) {
+                    return _players[cid];
+                }
+
+                //
+                this.turn = function(values) {
+                    for (var i in values) {
+                        if (values.hasOwnProperty(i)) {
+                            var player = _this.get(i);
+                            player.bet = values[i];
+                            
+                            // todo - remove direct DOM modification
+                            player.el_bet.innerHTML = values[i];
+                        }
+                    }
+                    _this.publish("turn");
+                };
+
+                //
+                this.hasMadeBet = function(cid) {
+                    
+                    var player = _this.get(cid);
+                    if (player) {
+                        player.hasMadeBet = true;
+                    } 
+                    
+                    // todo - remove direct DOM modification
+                    _this.get(cid).li.classList.add("ready");
+                };
+
+                // 
+                this.add = function(cid, playerName) {
+                    var player = new Player(cid, playerName);
+                    _players[cid] = player;
+                    _this.publish("add", player);
+                };
+
+                //
+                this.remove = function(cid) {
+                    var player = _players[cid];
+                    delete _players[cid];
+                    _this.publish("remove", player);
+                };
+
+                this.clearBets = function() {
+
+                    for (var i in _players) {
+                        if (_players.hasOwnProperty(i)) {
+                            var player = _players[i];
+                            
+                            player.hasMadeBet = false;
+                            player.bet = "";
+                            
+                            // todo - remove direct DOM modification
+                            player.li.classList.remove("ready");
+                            player.el_bet.innerHTML = "";
+                        }
+                    }
+
+                    _this.publish("clearBets");
+                }
+
+            })();
+            
+            
+            // handle DOM modification for playersList
+            var playersListView = new (function (ul, playersList) {
+                
+                var _ul = ul;
+                
+                // load template 
+                var _el_itemTemplate = _(".template", _ul);
+                _ul.removeChild(_el_itemTemplate);
+                _el_itemTemplate.classList.remove("template");
+                var itemTemplate = _el_itemTemplate.outerHTML;
+                
+                
+                // note - it should be in playerView                
+                playersList.on("add", function (player) {
+                    
+                    var li = parseHtml(itemTemplate);
+                    player.li = li;
+                    player.el_playerName = _(".name", li);
+                    player.el_bet = _(".bet", li);
+
+                    player.el_playerName.innerHTML = player.name;
+                    _ul.appendChild(li);
+                });
+                
+                playersList.on("remove", function (player) {
+                    if (player) {
+                        _ul.removeChild(player.li);
+                    }
+                });
+                
+                playersList.on("turn", function () {
+                    _ul.classList.add("turn");                    
+                });
+                
+                playersList.on("clearBets", function () {
+                    _ul.classList.remove("turn");                    
+                });
+                
+            })(_("#players"), playersList);
+
+
+            var hand = new (function(container) {
+
+                var _selected;
+
+                var lis = __("li", container);
+                for (var i = 0; i < lis.length; i++) {
+
+                    var li = lis[i];
+                    var val = li.textContent || li.innerText;
+                    (function scope(li, val) {
+
+                        li.addEventListener("click", function() {
+                            var res = pokerTable.server.bet(val);
+                            console.log(res);
+
+                            if (li.classList.contains("selected")) {
+                                _selected = undefined;
+                                li.classList.remove("selected");
+                            } else {
+                                if (_selected) {
+                                    _selected.classList.remove("selected");
+                                }
+                                li.classList.add("selected");
+                                _selected = li;
+                            }
+                        });
+
+                    })(li, val);
+                }
+
+                this.reset = function() {
+                    
+                    if (_selected) {
+                        _selected.classList.remove("selected");
+                        _selected = undefined;
+                    }
+
+                }
+
+            })(_("#hand"));
+
+
+            var pokerTable = $.connection.pokerTable;
+            pokerTable.client.notifyNewPlayer = playersList.add;
+            pokerTable.client.notifyPlayerLeft = playersList.remove;
+            pokerTable.client.hasMadeBet = playersList.hasMadeBet;
+            pokerTable.client.turn = playersList.turn;
+
+            pokerTable.client.reset = function () {
+                playersList.clearBets();
+                hand.reset();
+            };
+
+            var _el_joinform = _("#join-form");
+            var _el_name = _("#name", _el_joinform);
+
+            _el_joinform.addEventListener("submit", function(e) {
+                e.preventDefault();
+
+                var res = pokerTable.server.join(_el_name.value);
+                console.log(res);
+
+                // show table
+
+            });
+
+            var _el_btnReset = _("#reset");
+            _el_btnReset.addEventListener("click", function(e) {
+                pokerTable.server.reset();
+            });
+
+            var init = function(x) {
+                
+                var _cid = x.id;
+                
+                pokerTable.server.getAllPlayers()
+                    .done(function(players) {
+
+                        // warmed up. remove overlay
+
+                        // show all players
+                        for (var i in players) {
+                            if (players.hasOwnProperty(i)) {
+                                playersList.add(i, players[i]);
+                            }
+                        }
+                    });
+            }
+
+            // Start the connection
+            $.connection.hub
+                .start()
+                .then(init);
+
+        </script>
+        
+    </body>
+</html>
