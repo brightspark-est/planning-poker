@@ -1,0 +1,6 @@
+*.suo
+server/PlanningPoker.Server/bin/
+server/PlanningPoker.Server/obj/
+server/packages/
+*.user
+server/.vs/config/applicationhost.config
