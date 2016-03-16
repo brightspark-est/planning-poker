@@ -132,7 +132,13 @@ var Observable = function () {
             return;
         }
 
-        var args = [].slice.call(arguments, 1);
+        var l = arguments.length
+        var args = new Array(l-1);
+        for (var i = 1; i < l; i++) {
+            args[i-1] = arguments[i];
+        }
+  
+        //var args = [].slice.call(arguments, 1);
         for (var i = 0; i < _handlers[eventName].length; i++) {
             var handlerResult = _handlers[eventName][i].apply(_this, args);
             if (handlerResult === false) {
@@ -193,7 +199,11 @@ var Observable = function () {
             return _this;
         }
         
-        var namedPropertyChangedArgs = [].slice.call(args, 0);
+        var l = args.length
+        var namedPropertyChangedArgs = new Array(l);
+        for (var i = 0; i < l; i++) {
+            namedPropertyChangedArgs[i] = args[i];
+        }
         
         // publish for ALT1
         var propChanged = [].unshift.call(args, "propertyChanged");
