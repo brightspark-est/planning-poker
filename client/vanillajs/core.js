@@ -169,12 +169,17 @@ var Observable = function () {
             return;
         }
         
+        var namedPropertyChangedArgs = [].slice.call(args, 0);
+        
         // publish for ALT1
-        _this.publish("propertyChanged", args);
+        var propChanged = [].unshift.call(args, "propertyChanged");
+        _this.publish.apply(_this, args);
         
         // publish for ALT2
-        var propName = args.shift();
-        _this.publish("propertyChanged-" + propName, args);
+        var propName = [].shift.call(namedPropertyChangedArgs);
+        var namedPropertyChangedEventName = "propertyChanged-" + propName;
+        [].unshift.call(namedPropertyChangedArgs, namedPropertyChangedEventName);
+        _this.publish.apply(_this, namedPropertyChangedArgs);
         
         return _this;
     };
