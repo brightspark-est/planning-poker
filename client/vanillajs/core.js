@@ -40,6 +40,22 @@ var stdProp = function (_this, name, ref) {
         }
 };
 
+var regStdProp = function (_this, name, ref)
+{
+    var prop = stdProp(_this, name, ref);
+    Object.defineProperty(_this, name, prop);
+}
+
+var regStdProps = function (_this, props) {
+    
+    for (var propName in props) {
+        if (props.hasOwnProperty(propName))
+        {
+            regStdProp(_this, propName, props[propName])
+        }
+    }
+}
+
 /**
  * Faster alternative for filter
  * @param items
@@ -57,6 +73,14 @@ var grep = function(items, filter) {
 
     return filtered;
 };
+
+var Uid = function () {
+    Object.defineProperty(this, "uid", {
+        value: Uid.next++,
+        writable: false
+    });
+};
+Uid.next = 1;
 
 var Observable = function () {
 
@@ -158,7 +182,7 @@ var Observable = function () {
         // ALT1
         if (typeof a0 === "function") {
             _this.on("propertyChanged", a0);
-            return;
+            return _this;
         }
         
         var a1 = args[1];
@@ -166,7 +190,7 @@ var Observable = function () {
         // ALT2
         if (args.length == 2 && typeof a0 === "string" && typeof a1 === "function") {
             _this.on("propertyChanged-" + a0, a1);
-            return;
+            return _this;
         }
         
         var namedPropertyChangedArgs = [].slice.call(args, 0);
@@ -292,7 +316,7 @@ var router = new (function () {
                     
                     _currentPage = document.createElement("div");
                     _currentPage.innerHTML = res;
-                    pages[url] = _currentPage;
+                    _pages[url] = _currentPage;
                     
                     _el_container.appendChild(_currentPage);
                     

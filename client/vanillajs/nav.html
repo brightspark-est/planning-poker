@@ -6,6 +6,11 @@
         <title>Planning Poker</title>
         
         <link rel="stylesheet" type="text/css" href="style.css" />
+        
+        <!-- jQuery is only for signalR -->
+        <script src="http://localhost/PlanningPoker.Server/Scripts/jquery-1.10.2.min.js"></script>
+        <script src="http://localhost/PlanningPoker.Server/Scripts/jquery.signalR-2.2.0.min.js"></script>
+        <script src="http://localhost/PlanningPoker.Server/signalr/hubs"></script>
         <script src="core.js"></script>
     </head>
     
@@ -16,9 +21,18 @@
         
         <script type="text/javascript">
         
-            router
-                .init("body")
-                .load("table.html");
+        (function app() {
+            
+            var routing = new Routing(router.init("body"));
+            
+            routing.map("enter", )
+            
+            
+                .load("enter.html");
+            
+        })();
+        
+            
         
         </script>
         
