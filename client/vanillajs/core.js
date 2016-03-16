@@ -122,6 +122,16 @@ var Observable = function () {
         }
     };
 
+    var _publish = function (eventName, args) {
+        
+        for (var i = 0; i < _handlers[eventName].length; i++) {
+            var handlerResult = _handlers[eventName][i].apply(_this, args);
+            if (handlerResult === false) {
+                return false;
+            }
+        }
+    }
+
     /**
      * Trigger event
      * @param {} eventName 
@@ -132,19 +142,15 @@ var Observable = function () {
             return;
         }
 
+        // same as: var args = [].slice.call(arguments, 1);
+        // but with a bit better performance
         var l = arguments.length
         var args = new Array(l-1);
         for (var i = 1; i < l; i++) {
             args[i-1] = arguments[i];
         }
   
-        //var args = [].slice.call(arguments, 1);
-        for (var i = 0; i < _handlers[eventName].length; i++) {
-            var handlerResult = _handlers[eventName][i].apply(_this, args);
-            if (handlerResult === false) {
-                return false;
-            }
-        }
+        return _publish(eventName, args);
     };
     
     /**
@@ -154,17 +160,25 @@ var Observable = function () {
     this.createPubSub = function (eventName) {
         return function () {
             
-            var args = [].slice(arguments, 0);
-            var handler = args[0];
-
+            var handler = arguments[0];
             if (typeof handler === "function") {
                 _this.on(eventName, handler);
-                return;
+                return _this;
             }
 
-            [].unshift.call(args, eventName);
+            /*
+            // same as: [].unshift.call(args, eventName);
+            // but with a bit better performance
+            var l = arguments.length;
+            var args = new Array(l+1);
+            args[0] = eventName;
+            for (var i = 0; i < l; i++) {
+                args[i+1] = arguments[i];
+            }
             _this.publish.apply(_this, args);
+            */
             
+            _publish(eventName, arguments);
             return _this;
         };
     };
