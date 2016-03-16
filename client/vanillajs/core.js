@@ -41,6 +41,8 @@ var Observable = function () {
 
     /**
      * Subscribe to an event
+     * @param {string} eventName
+     * @param {function} handler
      */
     this.on = function (eventName, handler) {
         if (typeof handler !== "function") {
@@ -54,9 +56,10 @@ var Observable = function () {
     };
 
     /**
-     * 
-     * @param {} eventName 
-     * @param {} handler 
+     * Unsubscribe handler from event.
+     * If handler is not set, all handlers will be unsubscribed from given event.
+     * @param {string} eventName 
+     * @param {function} handler 
      * @returns {} 
      */
     this.unsubscribe = function (eventName, handler) {
@@ -81,8 +84,8 @@ var Observable = function () {
             return;
         }
 
+        var args = [].slice.call(arguments, 1);
         for (var i = 0; i < _handlers[eventName].length; i++) {
-            var args = [].slice.call(arguments, 1);
             var handlerResult = _handlers[eventName][i].apply(_this, args);
             if (handlerResult === false) {
                 return false;
@@ -91,46 +94,69 @@ var Observable = function () {
     };
     
     /**
-     * 
-     */
-    var publishSubscribe = function (eventName, args) {
-
-        args = args || [];
-        var handler = args[0];
-
-        if (typeof handler === "function") {
-            _this.subscribe(eventName, handler);
-            return;
-        }
-
-        Array.prototype.unshift.call(args, eventName);
-        _this.publish.apply(_this, args);
-    }
-    
-    /**
-     * 
+     * Helper function to create publish-subscribe function
+     * @param {string} eventName
      */
     this.createPubSub = function (eventName) {
         return function () {
-            publishSubscribe(eventName, arguments);
+            
+            var args = [].slice(arguments, 0);
+            var handler = args[0];
+
+            if (typeof handler === "function") {
+                _this.on(eventName, handler);
+                return;
+            }
+
+            [].unshift.call(args, eventName);
+            _this.publish.apply(_this, args);
+            
             return _this;
         };
-    }
+    };
     
     /**
-     * 
+     * Publish or subscribe 'propertyChanged' event
+     * publish always like this: 
+     * propertyChanged("propName", val, prevVal)
+     *
+     * subscribe has two alternatives
+     * ALT1: subscribe to all propertyChanged events
+     *       propertyChanged(function (propName, val, prevVal) { ... })
+     * ALT2: subscribe to certain propertyChanged event
+     *       propertyChanged("propName", function (val, prevVal) { ... })
      */
-    this.propertyChanged = this.createPubSub("propertyChanged");
-    
-    /**
-     * 
-     */
-    this.namedPropertyChanged = function (propertyName, handler) {
-        var args = arguments.slice[1];
-        var eventName = "propertyChanged-" + propertyName;
-        publishSubscribe(eventName, args)
-    }
+    this.propertyChanged = function () {
+        
+        var args = arguments;
+        var a0 = args[0];
+
+        // ALT1
+        if (typeof a0 === "function") {
+            _this.on("propertyChanged", a0);
+            return;
+        }
+        
+        var a1 = args[1];
+        
+        // ALT2
+        if (args.length == 2 && typeof a0 === "string" && typeof a1 === "function") {
+            _this.on("propertyChanged-" + a0, a1);
+            return;
+        }
+        
+        // publish for ALT1
+        _this.publish("propertyChanged", args);
+        
+        // publish for ALT2
+        var propName = args.shift();
+        _this.publish("propertyChanged-" + propName, args);
+        
+        return _this;
+    };
 };
+
+
 // A-> $http function is implemented in order to follow the standard Adapter pattern
 // https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise
 function http(url) {
@@ -200,7 +226,7 @@ function http(url) {
   };
 };
     
-var navigator = new (function () {
+var router = new (function () {
     
     var _this = this;
     Observable.call(_this);
@@ -211,9 +237,10 @@ var navigator = new (function () {
     
     this.init = function (containerId) {
         _el_container = _id(containerId);
+        return _this;
     }
     
-    this.loadPage = function (url) {
+    this.load = function (url) {
         
         if (_pages[url]) {
             return new Promise(function (resolve, reject) {
