@@ -17,6 +17,30 @@ var parseHtml = function(html) {
 }
 
 /**
+ * Create property definition
+ * @param {object} _this - Reference to this object 
+ * @param {string} name - Property name
+ * @param {object} ref - Value reference. { val : ... }
+ */
+var stdProp = function (_this, name, ref) {
+    
+    return {
+            get: function() {
+                return ref.val;
+            },
+            set: function (val) {
+                if (val === ref.val) {
+                    return;
+                }
+
+                var prevVal = ref.val;
+                ref.val = val;
+                _this.propertyChanged(name, ref.val, prevVal);
+            }
+        }
+};
+
+/**
  * Faster alternative for filter
  * @param items
  * @param filter - the filter 

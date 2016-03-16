@@ -64,96 +64,29 @@
         
         <script type="text/javascript">
 
-            var x = {};
-            Observable.call(x);
-
             var Player = function(cid, name) {
 
                 var _this = this;
                 Observable.call(_this);
                 
                 var _cid = cid;
-                var _name = name;
-                var _bet;
-                var _hasMadeBet = false;
+                var _name = {val: name};
+                var _bet = { };
+                var _hasMadeBet = {val: false};
 
-                /*
-                _this.propertyChanged = function () {
-                    
-                    // x.publishSubscribe(propertyChanged)
-                    _this.publishSubscribe("propertyChanged", arguments)
-                }
-                */
-                
                 var _props = {
                     cid: {
                         get: function() {
                             return _cid;
                         }
                     },
-                    name: {
-                        get: function() {
-                            return _name;
-                        },
-                        set: function (val) {
-                            if (val === _name) {
-                                return;
-                            }
-
-                            var prevVal = _name;
-                            _name = val;
-                            _this.propertyChanged("name", _name, prevVal);
-                        }
-                    },
-                    bet: {
-                        get: function() {
-                            return _bet;
-                        },
-                        set: function (val) {
-                            if (val === _bet) {
-                                return;
-                            }
-
-                            var prevVal = _bet;
-                            _bet = val;
-                            _this.propertyChanged("bet", _bet, prevVal);
-                        }
-                    },
-                    hasMadeBet: {
-                        get: function () {
-                            return _hasMadeBet;
-                        },
-                        set: function (val) {
-                            if (val === _hasMadeBet) {
-                                return;
-                            }
-                            
-                            var prevVal = _hasMadeBet;
-                            _hasMadeBet = val;
-                            _this.propertyChanged("hasMadeBet", _hasMadeBet, prevVal);
-                        }
-                    }
+                    name: stdProp(_this, "name", _name),
+                    bet: stdProp(_this, "bet", _bet),
+                    hasMadeBet: stdProp(_this, "hasMadeBet", _hasMadeBet)
                 }
 
                 Object.defineProperties(this, _props);
             };
-            /*
-            var playerView = new (function (template) {
-               
-               var li;
-               
-               Player.propertyChanged("name", funciton (val, oldVal) {
-                  
-                  
-                   
-               });
-               
-               Player.propertyChanged("bet", funciton (val, oldVal) {
-                  _el_bet.innerHTML = val;
-               });
-                
-            });
-            */
             
             var playersList = new (function() {
                 
@@ -172,9 +105,6 @@
                         if (values.hasOwnProperty(i)) {
                             var player = _this.get(i);
                             player.bet = values[i];
-                            
-                            // todo - remove direct DOM modification
-                            player.el_bet.innerHTML = values[i];
                         }
                     }
                     _this.publish("turn");
@@ -182,14 +112,10 @@
 
                 //
                 this.hasMadeBet = function(cid) {
-                    
                     var player = _this.get(cid);
                     if (player) {
                         player.hasMadeBet = true;
                     } 
-                    
-                    // todo - remove direct DOM modification
-                    _this.get(cid).li.classList.add("ready");
                 };
 
                 // 
@@ -206,24 +132,17 @@
                     _this.publish("remove", player);
                 };
 
+                //
                 this.clearBets = function() {
-
                     for (var i in _players) {
                         if (_players.hasOwnProperty(i)) {
                             var player = _players[i];
-                            
                             player.hasMadeBet = false;
                             player.bet = "";
-                            
-                            // todo - remove direct DOM modification
-                            player.li.classList.remove("ready");
-                            player.el_bet.innerHTML = "";
                         }
                     }
-
                     _this.publish("clearBets");
                 }
-
             })();
             
             
@@ -231,6 +150,7 @@
             var playersListView = new (function (ul, playersList) {
                 
                 var _ul = ul;
+                var _itemsViews = {};
                 
                 // load template 
                 var _el_itemTemplate = _(".template", _ul);
@@ -238,22 +158,48 @@
                 _el_itemTemplate.classList.remove("template");
                 var itemTemplate = _el_itemTemplate.outerHTML;
                 
-                
-                // note - it should be in playerView                
                 playersList.on("add", function (player) {
-                    
-                    var li = parseHtml(itemTemplate);
-                    player.li = li;
-                    player.el_playerName = _(".name", li);
-                    player.el_bet = _(".bet", li);
 
-                    player.el_playerName.innerHTML = player.name;
+                    // create player view                    
+                    var li = parseHtml(itemTemplate);
+                    var view = {
+                        li: li,
+                        el_playerName: _(".name", li),
+                        el_bet: _(".bet", li)
+                    };
+                    
+                    _itemsViews[player.cid] = view;
+                    
+                    // init
+                    view.el_playerName.innerHTML = player.name;
+                    
+                    // update DOM on property changed event
+                    player.propertyChanged(function (propName, val) {
+                        if (propName === "name") {
+                            view.el_playerName.innerHTML = val;
+                        }
+                        else if (propName === "bet")
+                        {
+                            view.el_bet.innerHTML = val;
+                        }
+                        else if (propName === "hasMadeBet")
+                        {
+                            if (val) {
+                                view.li.classList.add("ready");
+                            }
+                            else {
+                                view.li.classList.remove("ready");
+                            }
+                        }
+                    });
+
                     _ul.appendChild(li);
                 });
                 
                 playersList.on("remove", function (player) {
                     if (player) {
-                        _ul.removeChild(player.li);
+                        var view = _itemsViews[player.cid];
+                        _ul.removeChild(view.li);
                     }
                 });
                 
