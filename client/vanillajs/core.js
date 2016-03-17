@@ -84,6 +84,11 @@ Uid.next = 1;
 
 var Observable = function () {
 
+    if (typeof this.on === "function"){
+        // already observable
+        return;
+    }
+
     var _this = this;
     var _handlers = {};
 
@@ -231,6 +236,71 @@ var Observable = function () {
         
         return _this;
     };
+};
+
+
+var Indexed = function ()
+{
+    var _this = this;
+    Observable.call(_this);
+
+    
+    /*
+    * Register new index.
+    * Subscribes to events which will add or remove item from index
+    * @param {object} ref -
+    * @param {string} addEventName -
+    * @param {string} removeEventName -    
+    * @param {...string} cols - Index columns.
+    */
+    this.regIndex = function(ref, addEventName, removeEventName) {
+
+        var indexCols = Array.prototype.splice.call(arguments, 3);
+
+        (function(_indexCols) {
+
+            _this.subscribe(addEventName, function(o) {
+
+                var temp = ref;
+                for (var i = 0; i < _indexCols.length - 1; i++) {
+
+                    var propName = _indexCols[i];
+                    var propValue = o[propName];
+                    if (!temp[propValue]) {
+                        temp[propValue] = {};
+                    }
+                    temp = temp[propValue];
+                }
+
+                var x = _indexCols[_indexCols.length - 1];
+                var xval = o[x];
+                temp[xval] = o;
+            });
+
+            function remove(ix, object, cols) {
+
+                var propName = cols[0];
+                var propValue = object[propName];
+
+                if (cols.length === 1) {
+                    delete ix[propValue];
+                    return;
+                }
+
+                remove(ix[propValue], object, cols.splice(1));
+
+                if (isEmpty(ix[propValue])) {
+                    delete ix[propValue];
+                }
+            }
+
+            _this.subscribe(removeEventName, function (o) {
+                var cols = _indexCols.slice(0);
+                remove(ref, o, cols);
+            });
+
+        })(indexCols);
+    }
 };
 
 
