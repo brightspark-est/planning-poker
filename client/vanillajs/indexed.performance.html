@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Planning Poker</title>
+        
+        <link rel="stylesheet" type="text/css" href="style.css" />
+        <script src="core.js"></script>
+    </head>
+    
+    <body>
+        
+        <div id="body"></div>
+        
+        
+        <script type="text/javascript">
+        
+            var IndexedCollection = function (propName, optimistic) {
+                
+                var _this = this;
+                Indexed.call(_this);
+                
+                _this.ix = {};
+                
+                if (optimistic)
+                {
+                    _this.regIndexOptimistic(_this.ix, "added", "removed", propName);    
+                }
+                else
+                {
+                    _this.regIndex(_this.ix, "added", "removed", propName);
+                }
+                
+                _this.add = function (val) {
+                    _this.publish("added", val)
+                };
+                _this.remove = function (val) {
+                    _this.publish("removed", val)
+                };
+            }
+        
+            function test(c, propName) {
+                var start = new Date();
+            
+                var dt = new Date().getTime();
+                
+                for (var i = 0; i < 10000; i++)
+                {
+                    var date = new Date(dt + (i % 33) * 86400000);
+                    var timestamp = date.getTime();
+                    
+                    c.add( {  date: date, timestamp: timestamp, name: "n" + i });
+                }
+                
+                console.log("indexing by " + propName + " took " + (new Date() - start) + "ms");
+            }
+            
+            var c1 =  new IndexedCollection("timestamp");
+            //var c1optimistic =  new IndexedCollection("timestamp", true);
+            test(c1, "timestamp");
+            
+            var c2 =  new IndexedCollection("name");
+            //var c2optimistic =  new IndexedCollection("name", true);
+            test(c2, "name");
+            
+            var c3 =  new IndexedCollection("date");
+            //var c3optimistic =  new IndexedCollection("date", true);
+            test(c3, "date");
+            
+            var start = new Date();
+            
+            
+            // remove 1000 items from each 5th grouping
+            var index = 0
+            var removedCount = 0;
+            var c = c1;
+            for (var i in c.ix)
+            {
+                if (index++ % 5 == 0){
+                    
+                    var values = c.ix[i].slice(0);
+                    var l = values.length / 2
+                    for (var j = 0; j < l; j++)
+                    {
+                        var val = values[j];
+                        c.remove(val);
+                        removedCount++;
+                    }
+                }
+            }
+            
+            console.log("removing " + removedCount + " elements from index took " + (new Date() - start) + "ms");
+            
+            var _el_body = _id("body");
+            
+            for (var i in c.ix)
+            {
+                var div = parseHtml("<div>" + i + " | " + c.ix[i].length + "</div>");
+                _el_body.appendChild(div);
+            }
+            
+            
+        </script>
+        
+    </body>
+</html>

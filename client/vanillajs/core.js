@@ -56,6 +56,7 @@ var regStdProps = function (_this, props) {
     }
 }
 
+
 /**
  * Faster alternative for filter
  * @param items
@@ -74,13 +75,6 @@ var grep = function(items, filter) {
     return filtered;
 };
 
-var Uid = function () {
-    Object.defineProperty(this, "uid", {
-        value: Uid.next++,
-        writable: false
-    });
-};
-Uid.next = 1;
 
 var Observable = function () {
 
@@ -239,12 +233,124 @@ var Observable = function () {
 };
 
 
-var Indexed = function ()
-{
+var Indexed = function () {
+    
     var _this = this;
     Observable.call(_this);
 
+    /*
+	* Check if is empty object
+	* @param {object} obj
+	*/
+	function isEmpty(obj) {
+
+		// null and undefined are "empty"
+        // or it is an empty array
+		if (obj == null || obj.length === 0) return true;
+	
+		// non-empty array
+		if (obj.length > 0) return false;
+		
+		// Otherwise, does it have any properties of its own?
+		// Note that this doesn't handle
+		// toString and valueOf enumeration bugs in IE < 9
+		for (var key in obj) {
+			if (obj.hasOwnProperty(key)) return false;
+		}
+	
+		return true;
+	}
+
+    /**
+     * 
+     */
+    function addObjectToIndex(temp, xval, o) {
+        if (!temp[xval]) {
+            temp[xval] = [];
+        }
+        temp[xval].push(o);
+    }
+
+    /**
+     * 
+     */
+    function removeObjectFromIndex(ix, propValue, o) {
+        ix[propValue] = grep(ix[propValue], function (i) { return i !== o });
+        if (ix[propValue].length === 0) {
+            delete ix[propValue];    
+        }
+    }
     
+    /**
+     * 
+     */
+    function addObjectToIndexOptimistic(temp, xval, o) {
+        temp[xval] = o;
+    }
+    
+    /**
+     * 
+     */
+    function removeObjectFromIndexOptimistic(ix, propValue) {
+        delete ix[propValue];
+    }
+
+    /**
+     * 
+     */
+    function regIndex(ref, addEventName, removeEventName, indexCols, addFunc, removeFunc) {
+
+        _this.on(addEventName, function(o) {
+
+            var temp = ref;
+            for (var i = 0; i < indexCols.length - 1; i++) {
+
+                var propName = indexCols[i];
+                var propValue = o[propName];
+                if (!temp[propValue]) {
+                    temp[propValue] = {};
+                }
+                temp = temp[propValue];
+            }
+
+            var x = indexCols[indexCols.length - 1];
+            var xval = o[x];
+            
+            addFunc(temp, xval, o);
+        });
+
+        function remove(ix, object, cols) {
+
+            var propName = cols[0];
+            var propValue = object[propName];
+
+            if (cols.length === 1) {
+                removeFunc(ix, propValue, object);
+                return;
+            }
+
+            remove(ix[propValue], object, cols.splice(1));
+
+            if (isEmpty(ix[propValue])) {
+                delete ix[propValue];
+            }
+        }
+
+        _this.on(removeEventName, function (o) {
+            var cols = indexCols.slice(0);
+            remove(ref, o, cols);
+        });
+
+    }
+
+    /**
+     * 
+     */
+    this.regIndexOptimistic = function(ref, addEventName, removeEventName) {
+        var indexCols = [].splice.call(arguments, 3);
+        regIndex(ref, addEventName, removeEventName, indexCols, addObjectToIndexOptimistic, removeObjectFromIndexOptimistic);
+    };
+
     /*
     * Register new index.
     * Subscribes to events which will add or remove item from index
@@ -254,54 +360,19 @@ var Indexed = function ()
     * @param {...string} cols - Index columns.
     */
     this.regIndex = function(ref, addEventName, removeEventName) {
-
-        var indexCols = Array.prototype.splice.call(arguments, 3);
-
-        (function(_indexCols) {
-
-            _this.subscribe(addEventName, function(o) {
-
-                var temp = ref;
-                for (var i = 0; i < _indexCols.length - 1; i++) {
-
-                    var propName = _indexCols[i];
-                    var propValue = o[propName];
-                    if (!temp[propValue]) {
-                        temp[propValue] = {};
-                    }
-                    temp = temp[propValue];
-                }
-
-                var x = _indexCols[_indexCols.length - 1];
-                var xval = o[x];
-                temp[xval] = o;
-            });
-
-            function remove(ix, object, cols) {
-
-                var propName = cols[0];
-                var propValue = object[propName];
-
-                if (cols.length === 1) {
-                    delete ix[propValue];
-                    return;
-                }
-
-                remove(ix[propValue], object, cols.splice(1));
-
-                if (isEmpty(ix[propValue])) {
-                    delete ix[propValue];
-                }
-            }
-
-            _this.subscribe(removeEventName, function (o) {
-                var cols = _indexCols.slice(0);
-                remove(ref, o, cols);
-            });
-
-        })(indexCols);
+        var indexCols = [].splice.call(arguments, 3);
+        regIndex(ref, addEventName, removeEventName, indexCols, addObjectToIndex, removeObjectFromIndex);
     }
 };
+
+
+var Uid = function () {
+    Object.defineProperty(this, "uid", {
+        value: Uid.next++,
+        writable: false
+    });
+};
+Uid.next = 1;
 
 
 // A-> $http function is implemented in order to follow the standard Adapter pattern
