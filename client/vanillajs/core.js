@@ -40,8 +40,8 @@ var stdProp = function (_this, name, ref) {
         }
 };
 
-var regStdProp = function (_this, name, ref)
-{
+var regStdProp = function (_this, name, ref) {
+    
     var prop = stdProp(_this, name, ref);
     Object.defineProperty(_this, name, prop);
 }
