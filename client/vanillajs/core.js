@@ -164,18 +164,6 @@ var Observable = function () {
                 _this.on(eventName, handler);
                 return _this;
             }
-
-            /*
-            // same as: [].unshift.call(args, eventName);
-            // but with a bit better performance
-            var l = arguments.length;
-            var args = new Array(l+1);
-            args[0] = eventName;
-            for (var i = 0; i < l; i++) {
-                args[i+1] = arguments[i];
-            }
-            _this.publish.apply(_this, args);
-            */
             
             _publish(eventName, arguments);
             return _this;
