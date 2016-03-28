@@ -21,14 +21,100 @@
         
         <script type="text/javascript">
         
+        var __rootUrl = 'http://localhost/planning.poker.vanillajs/';
+        
+        var views = {};
+        
+        views.home = {};
+        
+        views.home.Index = function (url, html, svc) {
+            
+            var _form = _("form", html);
+            
+            _form.addEventListener("submit", function (e) {
+                e.preventDefault();
+                
+                var data = serializeForm(this);
+                svc.join(data);
+            })
+            
+        };
+        
+        var HomeController = function(router, server) {
+            
+            var _ax = router.action;
+
+            this.index = function () {
+                
+                alert('index');
+                //return _this.view(views.home.Index);
+            };
+            
+            
+            /*
+            this.index = _ax(
+                //[_ax.name("x")],
+                function () {
+                    return _this.view(views.home.Index);
+                }
+            );
+             */
+            
+            
+            this.join = function (model) {
+                
+                server.join(model.name)
+                    .then(function () {
+                        router.goto("board.html"); 
+                    });
+            };
+        };
+        
         (function app() {
             
-            var routing = new Routing(router.init("body"));
+            var router = new Router(__rootUrl);
             
-            routing.map("enter", HomeController)
+            var controllers = {
+                "home": new HomeController(router)
+            };
+            
+            router.controllerFactory = function (routeInfo) {
+                
+                var controllerKey = routeInfo.routeParams.controller.toLowerCase();
+                var controller = controllers[controllerKey];
+            };
+            
+            router
+                .map("home",
+                    "nav.html", 
+                    { controller: 'home', action: 'index' }
+                )
+                .map("default",
+                    ":controller/:action/:id", 
+                    { controller: 'home', action: 'index'}
+                );
             
             
-                .load("enter.html");
+            
+            router.load(function (url) {
+                
+                var routeInfo = router.getRouteInfo(url);
+                
+                var controller = controllers[routeInfo.routeParams.controller];
+                var action = controller[routeInfo.routeParams.action];
+                
+                action.call();
+                
+              /*  
+                http(url)
+                    .get()
+                    .then(function (res) {
+                        var container = _("#body");
+                        container.innerHTML = res;
+                    });*/
+            });
+            
+            router.load(window.location.href);
             
         })();
         

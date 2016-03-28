@@ -8,13 +8,30 @@ var _ = function(selector, el) {
 
 var _id = function (id) {
     return document.getElementById(id);
-}
+};
 
 var parseHtmlHelper = document.createElement("div");
 var parseHtml = function(html) {
     parseHtmlHelper.innerHTML = html;
     return parseHtmlHelper.firstElementChild;
-}
+};
+
+var serializeForm = function (form) {
+    var data = {};
+                                
+    var inputs = __("input, textarea", form);
+    for (var i = 0; i < inputs.length; i++) {
+        var input = inputs[i];
+        data[input.name] = input.value;
+    }
+    
+    var selects = __("select", form);
+    for (var i = 0; i < selects.length; i++) {
+        var select = selects[i];
+        var selectedOption = select.options[select.selectedIndex];
+        data[select.name] = selectedOption.value;
+    }
+};
 
 /**
  * Create property definition
@@ -75,6 +92,18 @@ var grep = function(items, filter) {
     return filtered;
 };
 
+/**
+ * Clone object
+ */
+var clone = function (obj) {
+    var target = {};
+    for (var i in obj) {
+        if (obj.hasOwnProperty(i)) {
+            target[i] = obj[i];
+        }
+    }
+    return target;
+};
 
 var Observable = function () {
 
@@ -122,6 +151,10 @@ var Observable = function () {
     };
 
     var _publish = function (eventName, args) {
+        
+        if (!_handlers[eventName]) {
+            return;
+        } 
         
         for (var i = 0; i < _handlers[eventName].length; i++) {
             var handlerResult = _handlers[eventName][i].apply(_this, args);
@@ -432,15 +465,159 @@ function http(url) {
   };
 };
     
-var router = new (function () {
+var Router = function (rootUrl) {
     
     var _this = this;
     Observable.call(_this);
+    Indexed.call(_this);
     
-    var _pages = {};
-    var _el_container;
-    var _currentPage;
+    var _rootUrl = rootUrl;
     
+    //var _pages = {};
+    //var _el_container;
+    //var _currentPage;
+
+    this.load = _this.createPubSub("load");
+    
+    var _routes = [];
+    
+    var _routesByPattern = {};
+    _this.regIndexOptimistic(_routesByPattern, "map", "unmap", "pattern");
+    
+    var _routesByName = {};
+    _this.regIndexOptimistic(_routesByName, "map", "unmap", "name");
+    
+    this.map = function (name, pattern, defaults) {
+        
+        var routeSegments = pattern.split("/");
+        var route = {
+            name: name,
+            pattern: pattern,
+            defaults: defaults,
+            segments: routeSegments
+        };
+        
+        _routes.push(route);
+        
+        _this.publish("map", route);
+        return _this;
+    };
+    
+    this.getRouteInfo = function (url) {
+        
+        // make url relative
+        if (url.indexOf(_rootUrl) === 0) {
+            url = url.substring(_rootUrl.length);
+        }
+        
+        var hash = "";
+        var queryString = "";
+        
+        var i = url.indexOf("#");
+        if (i === 0) {
+            url = "";
+            hash = url;
+        }
+        else if (i > 0) {
+            var hash = url.substring(i);
+            var url = url.substring(0, i-1);
+        }
+        
+        var i = url.indexOf("?");
+        if (i === 0) {
+            url = "";
+            queryString = url;
+        }
+        else if (i > 0) {
+            queryString = url.substring(i);
+            url = url.substring(0, i-1);
+        }
+        
+        var segments = url.split("/");
+        
+        var match;
+        var routeParams = {};
+        
+        for (var i = 0; i < _routes.length; i++) {
+            var route = _routes[i];
+            
+            var routeSegments = route.segments;
+            var currentRouteParams = clone(route.defaults);
+            
+            var found = true;            
+            for (var j = 0; j < routeSegments.length; j++) { 
+                var routeSegment = routeSegments[j];
+                
+                if (!routeSegment.startsWith(":")) {
+                    
+                    if (segments[j] != routeSegment)
+                    {
+                        found = false;
+                        break;
+                    }
+                }
+                else {
+                    if (j < segments.length) {
+                        currentRouteParams[routeSegment.substring(1)] = segments[j]
+                    }
+                }
+            }
+            
+            if (found) {
+                match = route;
+                routeParams = currentRouteParams;
+                break;
+            }
+        }
+        
+        return {
+            url: url,
+            hash: hash,
+            queryString: queryString,
+            //queryStringData: queryStringData,
+            route: match,
+            routeParams: routeParams
+        };
+    };
+    
+    this.url = function (name, params) {
+        
+    };
+    
+    this.goto = function (url, data, title) {
+        
+        history.pushState(data, title, url);
+        
+        _this.load(url);
+    };
+    
+    var action = function () {
+        
+        var attributes = [];
+        var f;
+        for (var i = 0; i < arguments.length; i++) {
+            
+            var arg = arguments[i]; 
+            if (Array.isArray[arg]) {
+                attributes.concat(arg)
+            }
+            else if (typeof arg === "function") {
+                f = arg;
+                
+                
+                return f;
+            }
+        }
+    };
+    
+    action.nameattr = function (name) {
+        return new ActionNameAttribute(name);
+    };
+    
+    this.action = action;
+    
+    
+    /*
     this.init = function (containerId) {
         _el_container = _id(containerId);
         return _this;
@@ -475,5 +652,5 @@ var router = new (function () {
                     
                 });
         }
-    };
-})();
+    };*/
+};
