@@ -151,6 +151,14 @@ var HomeController = function(server) {
         // 
         console.log(res);
     };
+
+    this.load = function () {
+        // todo -
+    };
+
+    this.undload = function () {
+        
+    }
 };
 
 // views - handle DOM

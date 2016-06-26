@@ -2,48 +2,63 @@ describe("Router", function() {
   var router;
 
   beforeEach(function() {
-    router = new Router("/");
-  });
-
-
-
-
-  it("should match plain url", function() {
-      
-    router.map(
-        "home",
-        "index.html",
-        {
-            controller: 'home',
-            action: 'index'
+    router = new Router({
+            filters: [
+                // TBD
+            ],
+            routes: [
+                {
+                    name: "map",
+                    pattern: "/:lang/Map/:action?/:id?",
+                    defaults: { controller: "Map", action: "index" },
+                    constraints: {
+                        lang: function (val) {
+                            return (val || "").length == 2;
+                        }
+                    }
+                },
+                {
+                    name: "default-with-language",
+                    pattern: "/:lang/:controller?/:action?/:id?",
+                    defaults: { controller: "Home", action: "index" },
+                    constraints: {
+                        lang: function (val) {
+                            return (val || "").length == 2;
+                        }
+                    }
+                },
+                {
+                    name: "default",
+                    pattern: "/:controller?/:action?/:id?",
+                    defaults: { lang: "en", controller: "Home", action: "index" }
+                }
+            ]
         });
-      
-    var data = router.getRouteInfo("index.html");
-      
-    expect(data.route).not.toBe(undefined);
-    expect(data.route.name).toBe("home");
-    expect(data.routeParams.controller).toBe("home");
-    expect(data.routeParams.action).toBe("index");
-      
   });
+
+  
+  it("should match map url pattern", function() {
+      
+    var res = router.matchRoute("/et/Map".toLowerCase());
+
+    expect(res.routeName).toBe("map");
+            
+  });
+
   
   it("should match url pattern", function() {
       
-    router.map(
-        "default",
-        ":controller/:action/:id",
-        {
-            controller: 'home',
-            action: 'index'
-        });
+    var res = router.matchRoute("/et/home");
+
+    expect(res.routeName).toBe("default-with-language");
+            
+  });
+
+  
+  it("should apply constraints when matching route", function() {
       
-    var data = router.getRouteInfo("/products");
-    
-    expect(data.route).not.toBe(undefined);
-    expect(data.route.name).toBe("default");
-    expect(data.routeParams.controller).toBe("products");
-    expect(data.routeParams.action).toBe("index");
-    expect(data.routeParams.id).toBe(undefined);
-      
+    var res = router.matchRoute("/home");
+    expect(res.routeName).toBe("default");
+            
   });
 });

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Planning Poker</title>
+        
+        <link rel="stylesheet" type="text/css" href="style.css" />
+        
+        
+        <!-- jQuery is only for signalR -->
+        <script src="http://localhost/PlanningPoker.Server/Scripts/jquery-1.10.2.min.js"></script>
+        <script src="http://localhost/PlanningPoker.Server/Scripts/jquery.signalR-2.2.0.min.js"></script>
+        <script src="http://localhost/PlanningPoker.Server/signalr/hubs"></script>
+        <script src="core.js"></script>
+
+        <script src="controllers/ControllerBase.js"></script>
+        <script src="controllers/HomeController.js"></script>
+
+        <script src="DI.js"></script>
+        <script src="Router.js"></script>
+    </head>
+
+    <body>
+
+        <header>
+
+        </header>
+
+        <div id="body-section">
+        </div>
+
+        <footer>
+
+        </footer>
+                
+        <script type="text/javascript">
+
+            (function () {
+            
+                var router = new Router({
+                    virtualDirectory: '/planning.poker.vanillajs',
+                    filters: [
+                        // TBD
+                    ],
+                    routes: [
+                        {
+                            name: "home",
+                            pattern: "/index2.html",
+                            defaults: { lang: "en", controller: "Home", action: "index" }
+                        },
+                        {
+                            name: "default-with-language",
+                            pattern: "/:lang/:controller?/:action?/:id?",
+                            defaults: { controller: "Home", action: "index" },
+                            constraints: {
+                                lang: function (val) {
+                                    return (val || "").length == 2;
+                                }
+                            }
+                        },
+                        {
+                            name: "default",
+                            pattern: "/:controller?/:action?/:id?",
+                            defaults: { lang: "en", controller: "Home", action: "index" }
+                        }
+                    ]
+                });
+
+                router.start(window.location.pathname);                    
+
+            //     var playersList;
+            //     var hand;
+            //     var pokerTableHub;
+                
+            //     var init = function(x) {
+                    
+            //         var _cid = x.id;
+                    
+            //         pokerTableHub.server.getAllPlayers()
+            //             .done(function(players) {
+
+            //                 // warmed up. remove overlay
+
+            //                 // show all players
+            //                 for (var i in players) {
+            //                     if (players.hasOwnProperty(i)) {
+            //                         playersList.add(i, players[i]);
+            //                     }
+            //                 }
+            //             });
+            //     };
+            
+            // this.start = function () {
+
+            //         pokerTableHub = $.connection.pokerTable;
+                    
+            //         var indexView = new IndexView(new HomeController(pokerTableHub.server));
+                    
+            //         playersList = new PlayersList();
+            //         var playersListView = new PlayersListView(playersList);
+                    
+            //         hand = new Hand(pokerTableHub.server);
+            //         var handView = new HandView(hand);
+                    
+            //         pokerTableHub.client.notifyNewPlayer = playersList.add;
+            //         pokerTableHub.client.notifyPlayerLeft = playersList.remove;
+            //         pokerTableHub.client.hasMadeBet = playersList.hasMadeBet;
+            //         pokerTableHub.client.turn = playersList.turn;
+
+            //         pokerTableHub.client.reset = function () {
+            //             playersList.clearBets();
+            //             hand.tableHasBeenReset();
+            //         };
+                    
+            //         // Start the connection
+            //         $.connection.hub
+            //             .start()
+            //             .then(init);
+            //     }; 
+                    
+            })();
+
+        </script>
+        
+    </body>
+</html>
