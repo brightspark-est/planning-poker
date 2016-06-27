@@ -1,30 +1,45 @@
 var HomeController = function HomeController() {
     
-    var _server = DI.resolve("pokerTableHub.server");
+    var _pokerTableSvc = DI.resolve("PokerTableSvc");
+    var _app = DI.resolve("app");
+
+    // var _indexView = DI.resolve("views.home.index");
 
     this.join = function (model) {
         
-        var res = _server.join(model.name)
+        var res = _pokerTableSvc.server.join(model.name)
             .then(function () {
                 console.log(this);
                 console.log(arguments);
+
+                _app.navigateToAction("table")
             });
         // 
         console.log(res);
     };
 
-    this.load = function () {
-        // todo -
-    };
+    // this.load = function () {
+    //     // todo -
+    // };
 
-    this.undload = function () {
+    // this.undload = function () {
         
-    }
+    // }
 
+    /**
+     * 
+     */
     this.index = function () {
 
-        return this.view("index");
+        return this.__partial(PlanningPoker, "views.home", "index");
     };
+
+    /**
+     * 
+     */
+    this.table = function () {
+        return this.__partial(PlanningPoker, "views.home", "table");
+    }
 };
 
 // inherit from base controller

@@ -84,7 +84,7 @@ var PlayersList = function() {
         _this.publish("remove", player);
     };
 
-    //
+    // ???
     this.clearBets = function() {
         for (var i in _players) {
             if (_players.hasOwnProperty(i)) {

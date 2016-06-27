@@ -45,7 +45,7 @@
             
                 var dt = new Date().getTime();
                 
-                for (var i = 0; i < 10000; i++)
+                for (var i = 0; i < 500000; i++)
                 {
                     var date = new Date(dt + (i % 33) * 86400000);
                     var timestamp = date.getTime();
@@ -67,6 +67,8 @@
             var c3 =  new IndexedCollection("date");
             //var c3optimistic =  new IndexedCollection("date", true);
             test(c3, "date");
+            
+            
             
             var start = new Date();
             
@@ -92,13 +94,22 @@
             
             console.log("removing " + removedCount + " elements from index took " + (new Date() - start) + "ms");
             
-            var _el_body = _id("body");
             
-            for (var i in c.ix)
+            start = new Date();
+            for (var i = 0; i < 10000; i++)
             {
-                var div = parseHtml("<div>" + i + " | " + c.ix[i].length + "</div>");
-                _el_body.appendChild(div);
+                c2.ix["n"+1]
             }
+            console.log("fetching 10k elements from index took " + (new Date() - start) + "ms");
+            
+            
+            // var _el_body = _id("body");
+            
+            // for (var i in c.ix)
+            // {
+            //     var div = parseHtml("<div>" + i + " | " + c.ix[i].length + "</div>");
+            //     _el_body.appendChild(div);
+            // }
             
             
         </script>

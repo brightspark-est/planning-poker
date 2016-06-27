@@ -1,8 +1,21 @@
 var Controller = function() {
     
+    var _view_cache = {};
+
     this.__view = function (viewName) {
 
 
+    }
+
+    this.__partial = function (nsRef, ns, viewName) {
+
+        var key = ns + "." + viewName;
+        if (!_view_cache[key]) {
+            var context = NS.require(nsRef, ns);
+            _view_cache[key] = new context[viewName](this);
+        }
+
+        return _view_cache[key];
     }
         
 };

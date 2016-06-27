@@ -1,6 +1,9 @@
 var Router = function (config) {
 
     var _routes = config.routes;
+    var _routesByName = {};
+
+    var _currentState;
 
     // create regex patterns for route patterns
     (function () {
@@ -21,6 +24,7 @@ var Router = function (config) {
 
         for (var i = 0; i < _routes.length; i++) {
             var route = _routes[i];
+            _routesByName[route.name] = route;
 
             // get normalized (lower case) defaults collection
             route.defaults = normalizeCollection(route.defaults);
@@ -52,7 +56,7 @@ var Router = function (config) {
                 })
                  
             route.parameters = routeParams;
-            route.regex = new RegExp(regexPattern);
+            route.regex = new RegExp(regexPattern, "i");
         }
 
     })();
@@ -102,6 +106,10 @@ var Router = function (config) {
                 }
 
                 var routeName = route.name;
+                
+                routeParameters.controller = routeParameters.controller.toLowerCase();
+                routeParameters.action = routeParameters.action.toLowerCase();
+
                 return {
                     name: routeName,
                     parameters: routeParameters,
@@ -118,17 +126,24 @@ var Router = function (config) {
         }
 
         var res = this.matchRoute(url);
+        _currentState = res;
         console.log(res);
 
-        var controllerName = res.parameters.controller + "controller";
         console.log(controllerName);
+        console.log(actionName);
+        
+        var controllerName = res.parameters.controller + "controller";
         var controller = Controller.create(controllerName);
 
         var actionName = res.parameters.action;
-        console.log(actionName);
-
         var action = Controller.getAction(controller, actionName);
         console.log(action);
+
+        var view = action.call(controller, res.requestParameters);
+        var content = view.render();
+
+        config.body.innerHTML = "";
+        config.body.appendChild(content);
     };
 
     
@@ -147,6 +162,31 @@ var Router = function (config) {
     };
 
     this.navigateTo = function (parameters) {
+
+    };
+
+    
+
+    this.navigateToAction = function (actionName, controllerName) {
+
+        var parameters = {
+            action: actionName, 
+            controller: controllerName
+        }
+
+        for (var paramName in _currentState.parameters) {
+            if (_currentState.parameters.hasOwnProperty(paramName)) {
+                if (parameters[paramName] === undefined) {
+                    parameters[paramName] = _currentState[paramName];
+                }
+            }
+        }
+
+        var route = _routesByName[_currentState.route];
+        
+        var url = config.virtualDirectory;
+
+        window.history.pushState({}, "test", url);
 
     };
 
