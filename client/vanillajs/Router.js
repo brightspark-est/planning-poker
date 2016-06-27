@@ -33,17 +33,19 @@ var Router = function (config) {
             route.constraints = normalizeCollection(route.constraints)  
 
             var routeParams = [];
+            var routeParamsByName = {};
 
             var regexPattern = route.pattern
-                .toLowerCase()
                 .replace(/\/(:)([^/?]*)((?:\?|))/gi, function (str, colon, paramName, optional) {
 
-                    routeParams.push({
+                    var paramDefinition = {
                         name: paramName, 
                         optional: optional === "?",
                         defaultValue: route.defaults[paramName],
                         constraints: route.constraints[paramName]
-                    });
+                    };
+                    routeParams.push(paramDefinition);
+                    routeParamsByName[paramDefinition.name] = paramDefinition;
 
                     var returnString = "";
                     returnString += "/";
@@ -56,11 +58,66 @@ var Router = function (config) {
                 })
                  
             route.parameters = routeParams;
+            route.parametersByName = routeParamsByName;
             route.regex = new RegExp(regexPattern, "i");
         }
 
     })();
 
+    /**
+     * 
+     */
+    this.matchRouteByParams = function (paramValues) {
+
+        for (var i = 0; i < _routes.length; i++) {
+
+            var route = _routes[i];
+
+            var isMatch = true;
+            for (var pi = 0; pi < route.parameters.length; pi++) {
+
+                var routeParameter = route.parameters[pi];
+
+                if (!(routeParameter.name in paramValues) && !(routeParameter.name in route.defaults) && !routeParameter.optional)
+                {
+                    isMatch = false;
+                    break;
+                }
+
+                var val = paramValues[routeParameter.name] || routeParameter.defaultValue;
+                if (typeof routeParameter.constraints === "function") {
+
+                    if (!routeParameter.constraints(val)) {
+                        isMatch = false;
+                        break;
+                    }
+                }
+            }
+
+            // check default values for parameters which can not be set.
+            // for instance /foo/:bar where '/foo' is alway static
+            var controllerName = (paramValues.controller || "").toLowerCase();
+            var defaultControllerName = (route.defaults.controller || "").toLowerCase();
+            if (!("controller" in route.parametersByName) && defaultControllerName !== controllerName) {
+                isMatch = false;
+            }
+
+            var actionName = (paramValues.action || "").toLowerCase();
+            var defaultActionName = (route.defaults.action || "").toLowerCase();
+            if (!("action" in route.parametersByName) && defaultActionName !== actionName) {
+                isMatch = false;
+            }
+            
+            if (isMatch) {
+                return route.name;
+            }
+        }
+
+    };
+
+    /**
+     * 
+     */
     this.matchRoute = function (url) {
 
         for (var i = 0; i < _routes.length; i++) {
@@ -119,6 +176,9 @@ var Router = function (config) {
 
     };
 
+    /**
+     * 
+     */
     this.start = function (url) {
 
         if (config.virtualDirectory) {
@@ -127,17 +187,12 @@ var Router = function (config) {
 
         var res = this.matchRoute(url);
         _currentState = res;
-        console.log(res);
-
-        console.log(controllerName);
-        console.log(actionName);
         
         var controllerName = res.parameters.controller + "controller";
         var controller = Controller.create(controllerName);
 
         var actionName = res.parameters.action;
         var action = Controller.getAction(controller, actionName);
-        console.log(action);
 
         var view = action.call(controller, res.requestParameters);
         var content = view.render();
@@ -145,49 +200,76 @@ var Router = function (config) {
         config.body.innerHTML = "";
         config.body.appendChild(content);
     };
-
     
+    /**
+     * 
+     */
+    this.navigateToAction = function (actionName, controllerName, parameters) {
 
-    this.url = function (parameters) {
-
+        var url = this.urlAction(actionName, controllerName, parameters)
+        window.history.pushState({}, "", url);
+        this.start(url);
     };
 
-    this.routeUrl = function (routeName, parameters) {
+    /**
+     * 
+     */
+    this.urlAction = function (actionName, controllerName, parameters) {
 
-        var route = _routes[routeName];
-        if (typeof route === "undefined") {
-            throw "Route with name '" + routeName + "' not defined.";
+        if (typeof arguments[1] === "object") {
+            parameters = arguments[1];
+            controllerName = undefined;
         }
 
-    };
-
-    this.navigateTo = function (parameters) {
-
-    };
-
-    
-
-    this.navigateToAction = function (actionName, controllerName) {
-
-        var parameters = {
-            action: actionName, 
-            controller: controllerName
+        if (!parameters) {
+            parameters = {};
         }
 
-        for (var paramName in _currentState.parameters) {
-            if (_currentState.parameters.hasOwnProperty(paramName)) {
-                if (parameters[paramName] === undefined) {
-                    parameters[paramName] = _currentState[paramName];
+        parameters.action = actionName;
+        parameters.controller = controllerName;
+
+        if (parameters.controller === undefined && _currentState) {
+            parameters.controller = _currentState.controller;
+        }
+
+        var routeName = this.matchRouteByParams(parameters);
+        return this.urlRoute(routeName, parameters);
+    };
+
+    /**
+     * 
+     */
+    this.urlRoute = function (routeName, parameters) {
+
+        var route = _routesByName[routeName];
+        var url = config.virtualDirectory || "";
+        url += route.pattern
+            .replace(/\/(:)([^/?]*)((?:\?|))/gi, function (str, colon, paramName, optional) {
+                
+                var val = undefined;
+                if (paramName in parameters && parameters[paramName] !== undefined) {
+                    val = parameters[paramName];
                 }
-            }
-        }
+                else if (route.defaults && paramName in route.defaults) {
+                    val = route.defaults[paramName];
+                }
 
-        var route = _routesByName[_currentState.route];
-        
-        var url = config.virtualDirectory;
+                if (val !== undefined) {
 
-        window.history.pushState({}, "test", url);
+                    if (paramName === "action" || paramName === "controller") {
+                        val = val.toLowerCase();
+                    }
 
-    };
+                    return "/" + val;
+                }
+
+                if (optional) {
+                    return "";
+                }
+                return "/";
+            })
+
+        return url;
+    }
 
 };  

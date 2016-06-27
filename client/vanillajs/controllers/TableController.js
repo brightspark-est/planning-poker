@@ -1,4 +1,7 @@
-var Hand = function(server) {
+var TableController = function TableController() {
+    
+    var _pokerTableSvc = DI.resolve("PokerTableSvc");
+    var _app = DI.resolve("app");
 
     var _this = this;
     Observable.call(_this);
@@ -11,7 +14,7 @@ var Hand = function(server) {
         _cards[card.uid] = card;
         card.propertyChanged("selected", function (selected) {
             if (selected) {
-                server.bet(card.value);
+                _pokerTableSvc.server.bet(card.value);
                 if (_selectedCard) {
                     _selectedCard.selected = false;
                 }
@@ -21,7 +24,7 @@ var Hand = function(server) {
     }
 
     this.reset = function() {
-        server.reset();
+        _pokerTableSvc.server.reset();
     }
     
     this.tableHasBeenReset = function () {
@@ -30,12 +33,17 @@ var Hand = function(server) {
             _selectedCard = undefined;
         }
     };
-    
-    this.createCards = function() {
-        for (var i = 101; i <= 10000; i++) {
-            var card = new Card(i, i);
-            _this.addCard(card);
-            _this.publish("cardCreated", card);
-        }
+
+    /**
+     * 
+     */
+    this.index = function () {
+        return this.__partial(PlanningPoker, "views.home", "table");
     }
 };
+
+// inherit from base controller
+TableController.prototype = new Controller(); 
+TableController.prototype.constructor = TableController;
+
+Controller.addToFactory(TableController);

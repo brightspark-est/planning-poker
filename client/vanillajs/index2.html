@@ -26,8 +26,12 @@
 
         <script src="controllers/ControllerBase.js"></script>
         <script src="controllers/HomeController.js"></script>
+        <script src="controllers/TableController.js"></script>
 
         <script src="views/home/index.js"></script>
+        <script src="views/home/table.js"></script>
+
+        <script src="components/Card.js"></script>
     </head>
 
     <body>
@@ -64,6 +68,11 @@
                             name: "home",
                             pattern: "/index2.html",
                             defaults: { lang: "en", controller: "Home", action: "index" }
+                        },
+                        {
+                            name: "play",
+                            pattern: "/play.html",
+                            defaults: { lang: "en", controller: "Table", action: "index" }
                         },
                         {
                             name: "default-with-language",

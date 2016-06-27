@@ -32,7 +32,7 @@ describe("Router", function() {
         ]
     });
 
-    it("should route to matching url pattern", function() {
+    it("should match route by url pattern", function() {
 
         var res = router.matchRoute("/Foo/Bar/1");
         expect(res.name).toBe("default");
@@ -52,7 +52,7 @@ describe("Router", function() {
 
     });
 
-    it("should route to first match", function() {
+    it("should match route to first match", function() {
       
         var res = router.matchRoute("/et/Map/theAction/1");
         expect(res.name).toBe("map");
@@ -61,6 +61,14 @@ describe("Router", function() {
         expect(res.parameters.id).toBe("1");
     });
   
+    it ("should be able to match route by parameter values", function () {
+
+        expect(router.matchRouteByParams({})).toBe("default");
+        expect(router.matchRouteByParams({lang: "en"})).toBe("default-with-language");
+        expect(router.matchRouteByParams({lang: "en", controller: "map"})).toBe("map");
+
+    });
+
     it("should have case insensitive route matching", function () {
 
         var res = router.matchRoute("/et/Map");
@@ -81,5 +89,62 @@ describe("Router", function() {
         var res = router.matchRoute("/foo");
         expect(res.name).toBe("default");
             
+    });
+
+    it("should be able to compile url based on route name and parameters", function () {
+
+        var url = router.urlRoute("default", {
+            controller: "foo"
+        });
+        expect(url).toBe("/foo");
+
+        var url = router.urlRoute("default", {
+            controller: "foo",
+            action: "bar"
+        });
+        expect(url).toBe("/foo/bar");
+
+        var url = router.urlRoute("default", {
+            controller: "foo",
+            action: "bar",
+            id: 1
+        });
+        expect(url).toBe("/foo/bar/1");
+
+        var url = router.urlRoute("default-with-language", {
+            lang: "en",
+            controller: "foo",
+            action: "bar",
+            id: 1
+        });
+        expect(url).toBe("/en/foo/bar/1");
+
+        var url = router.urlRoute("map", {
+            action: "bar",
+            id: 1
+        });
+        expect(url).toBe("//Map/bar/1");
+    });
+
+    it("should be able to compile url based on parameters", function () {
+
+        var url = router.urlAction("foo", "bar");
+        expect(url).toBe("/bar/foo");
+
+        var url = router.urlAction("foo");
+        expect(url).toBe("/home/foo");
+
+        var url = router.urlAction("foo", { id: 1 });
+        expect(url).toBe("/home/foo/1");
+
+    });
+
+    it("should stop compiling url if optional parameter is missing from chain", function () {
+
+        var url = router.urlRoute("default", {
+            controller: "foo",
+            id: 1
+        });
+        expect(url).toBe("/foo/index/1");
     });
 });

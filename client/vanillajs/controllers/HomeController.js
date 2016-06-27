@@ -12,7 +12,7 @@ var HomeController = function HomeController() {
                 console.log(this);
                 console.log(arguments);
 
-                _app.navigateToAction("table")
+                _app.navigateToAction("index", "table")
             });
         // 
         console.log(res);
@@ -33,13 +33,6 @@ var HomeController = function HomeController() {
 
         return this.__partial(PlanningPoker, "views.home", "index");
     };
-
-    /**
-     * 
-     */
-    this.table = function () {
-        return this.__partial(PlanningPoker, "views.home", "table");
-    }
 };
 
 // inherit from base controller
