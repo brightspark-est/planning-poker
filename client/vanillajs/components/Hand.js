@@ -39,3 +39,7 @@ var Hand = function(server) {
         }
     }
 };
+
+var HandView = function (hand, context) {
+    
+}

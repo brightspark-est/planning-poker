@@ -18,14 +18,6 @@ var HomeController = function HomeController() {
         console.log(res);
     };
 
-    // this.load = function () {
-    //     // todo -
-    // };
-
-    // this.undload = function () {
-        
-    // }
-
     /**
      * 
      */

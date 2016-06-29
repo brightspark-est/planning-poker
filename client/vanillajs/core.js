@@ -164,6 +164,10 @@ var Observable = function () {
         }
     }
 
+    this.applyPublish = function (eventName, args) {
+        _publish(eventName, args);
+    }
+
     /**
      * Trigger event
      * @param {} eventName 

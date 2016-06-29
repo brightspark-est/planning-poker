@@ -1,64 +1,79 @@
 var PlayersList = function() {
     
+    var _pokerTableSvc = DI.resolve("PokerTableSvc");
+    var _app = DI.resolve("app");
+
     Observable.call(this);
+    Indexed.call(this);
+
     var _this = this;
     var _players = {};
 
-    //
+    _this.regIndexOptimistic(_players, "add", "remove", "cid");
+
+    /**
+     * Get player by connection id
+     */
     this.get = function (cid) {
         return _players[cid];
     }
 
-    //
-    this.turn = function(values) {
-        for (var i in values) {
-            if (values.hasOwnProperty(i)) {
-                var player = _this.get(i);
-                player.bet = values[i];
-            }
-        }
-        _this.publish("turn");
+    var _addPlayer = function(cid, dto) {
+        var player = new Player(cid, dto.name);
+        player.hasMadeBet = dto.hasBet;
+        _this.publish("add", player);
     };
 
-    //
-    this.hasMadeBet = function(cid) {
+    /**
+     * Subscribe to hasMadeBet event to update players status
+     */
+    _pokerTableSvc.hasMadeBet(function(cid) {
         var player = _this.get(cid);
         if (player) {
             player.hasMadeBet = true;
         } 
-    };
+    });
 
-    // 
-    this.add = function(cid, playerName) {
-        var player = new Player(cid, playerName);
-        _players[cid] = player;
-        _this.publish("add", player);
-    };
+    /**
+     * Server notifies if some other player has joined the table
+     */
+    _pokerTableSvc.playerJoined(_addPlayer);
 
-    //
-    this.remove = function(cid) {
+    /**
+     * Remove player from list
+     */
+    _pokerTableSvc.playerLeft(function(cid) {
         var player = _players[cid];
-        delete _players[cid];
         _this.publish("remove", player);
-    };
+    });
 
-    // ???
-    this.clearBets = function() {
-        for (var i in _players) {
-            if (_players.hasOwnProperty(i)) {
-                var player = _players[i];
-                player.hasMadeBet = false;
-                player.bet = "";
-            }
+    /**
+     * 
+     */
+    _pokerTableSvc.turn(function (bets) {
+        for (var cid in bets) {
+            _players[cid].bet = bets[cid];
         }
-        _this.publish("clearBets");
+        _this.publish("turn");
+    });
+
+    this.load = function () {
+
+        _pokerTableSvc.server.getPlayers()
+            .done(function(players) {
+                for (var i in players) {
+                    if (players.hasOwnProperty(i)) {
+                        _addPlayer(i, players[i]);
+                    }
+                }
+            });
     }
 };
 
 
-var PlayersListView = function (playersList) {
+var PlayersListView = function (playersList, context) {
     
-    var _ul = _id("players");
+    var _ul = _("#players", context);
     var _itemsViews = {};
     
     // load template 
@@ -71,6 +86,10 @@ var PlayersListView = function (playersList) {
 
         // create player view                    
         var li = parseHtml(itemTemplate);
+        if (player.hasMadeBet) {
+            li.classList.add("ready");
+        }
+
         var view = {
             li: li,
             el_playerName: _(".name", li),

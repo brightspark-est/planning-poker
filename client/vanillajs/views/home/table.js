@@ -3,7 +3,15 @@
     var _ns_home = NS.require(pp, "views.home");
 
     _ns_home.table = function Table(model) {
+
+        // components        
+        var _playersList = new PlayersList();
+        // var _hand = new Hand();
         
+        // componets views
+        var _playersListView;
+        var _handView;
+
         var _this = this;
         var _model = model;
 
@@ -12,10 +20,20 @@
         var _el_hand;
         var _el_btnReset;
 
+        
+
         /**
          * 
          */
         var _init = function () {
+
+            // load componets views
+            _playersListView = DI.resolve("component.playersList.view", _playersList, _domContext);
+            _handView = DI.resolve("component.hand.view", _hand, _domContext);
+
+            // init components
+            _playersList.load();
+            // _hand.load();
 
             _el_hand = _("#hand", _domContext);
             _el_btnReset = _("#reset", _domContext);

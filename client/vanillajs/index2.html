@@ -22,6 +22,8 @@
             var PlanningPoker = {};
         </script>
 
+        
+
         <script src="services/PokerTableSvc.js"></script>
 
         <script src="controllers/ControllerBase.js"></script>
@@ -32,6 +34,8 @@
         <script src="views/home/table.js"></script>
 
         <script src="components/Card.js"></script>
+        <script src="components/PlayersList.js"></script>
+        <script src="components/Player.js"></script>
     </head>
 
     <body>
@@ -61,7 +65,9 @@
                     body: _("#body-section"),
 
                     filters: [
-                        // TBD
+                        function () {
+                            // if not joined, redirect to home
+                        }
                     ],
                     routes: [
                         {
@@ -96,57 +102,15 @@
                     return app;
                 });
 
-                app.start(window.location.pathname);                    
-
-            //     var playersList;
-            //     var hand;
-            //     var pokerTableHub;
-                
-            //     var init = function(x) {
-                    
-            //         var _cid = x.id;
-                    
-            //         pokerTableHub.server.getAllPlayers()
-            //             .done(function(players) {
-
-            //                 // warmed up. remove overlay
-
-            //                 // show all players
-            //                 for (var i in players) {
-            //                     if (players.hasOwnProperty(i)) {
-            //                         playersList.add(i, players[i]);
-            //                     }
-            //                 }
-            //             });
-            //     };
-            
-            // this.start = function () {
-
-            //         pokerTableHub = $.connection.pokerTable;
-                    
-            //         var indexView = new IndexView(new HomeController(pokerTableHub.server));
-                    
-            //         playersList = new PlayersList();
-            //         var playersListView = new PlayersListView(playersList);
-                    
-            //         hand = new Hand(pokerTableHub.server);
-            //         var handView = new HandView(hand);
-                    
-            //         pokerTableHub.client.notifyNewPlayer = playersList.add;
-            //         pokerTableHub.client.notifyPlayerLeft = playersList.remove;
-            //         pokerTableHub.client.hasMadeBet = playersList.hasMadeBet;
-            //         pokerTableHub.client.turn = playersList.turn;
-
-            //         pokerTableHub.client.reset = function () {
-            //             playersList.clearBets();
-            //             hand.tableHasBeenReset();
-            //         };
-                    
-            //         // Start the connection
-            //         $.connection.hub
-            //             .start()
-            //             .then(init);
-            //     }; 
+                DI.register("component.playersList.view", PlayersListView, DI.transient);
+                DI.register("component.hand.view", HandView, DI.transient);
+        
+                // Start the connection
+                DI.resolve("PokerTableSvc").hub
+                    .start()
+                    .then(function () {
+                        app.start(window.location.pathname);
+                    });
                     
             })(PlanningPoker);
 

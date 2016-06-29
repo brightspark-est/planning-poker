@@ -29,7 +29,9 @@ var DI;
 
         this.resolve = function (serviceName) {
             var svcDefinition = _registry[serviceName];
-            return svcDefinition.resolve.call(svcDefinition);
+
+            var args = [].slice.call(arguments, 1);
+            return svcDefinition.resolve.apply(svcDefinition, args);
         };
 
         this.singleton = function () {
@@ -41,6 +43,13 @@ var DI;
 
             return _instances[key];
         };
+
+        this.transient = function () {
+
+            var args = [].slice.call(arguments, 0);
+            args.unshift(null);
+            return new (Function.prototype.bind.apply(this.type, args));
+        }
     }
 
     w.DI = new DI();
