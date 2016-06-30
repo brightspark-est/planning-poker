@@ -6,7 +6,7 @@
 
         // components        
         var _playersList = new PlayersList();
-        // var _hand = new Hand();
+        var _hand = new Hand();
         
         // componets views
         var _playersListView;
@@ -16,11 +16,6 @@
         var _model = model;
 
         var _domContext;
-
-        var _el_hand;
-        var _el_btnReset;
-
-        
 
         /**
          * 
@@ -33,54 +28,17 @@
 
             // init components
             _playersList.load();
-            // _hand.load();
-
-            _el_hand = _("#hand", _domContext);
-            _el_btnReset = _("#reset", _domContext);
-
-            function bind (li, card) {
-                (function scope(li, card) {
-                    li.addEventListener("click", function() {
-                        card.selected = !card.selected;
-                    });
-                    
-                    card.propertyChanged("selected", function (selected) {
-                        if (selected) {
-                            li.classList.add("selected");
-                        }
-                        else{
-                            li.classList.remove("selected");
-                        }
-                    });
-                    
-                })(li, card);
-            }
-                            
-            // discover existing cards from html
-            var lis = __("li", _el_hand);
-            for (var i = 0; i < lis.length; i++) {
-                var li = lis[i];
-                var val = li.textContent || li.innerText;
-                var card = new Card(val, val);
-                _model.addCard(card);
-                bind(li, card);
-            }
-                        
-            _el_btnReset.addEventListener("click", function(e) {
-                e.preventDefault();
-                _model.reset();
-            });
-            
+            _hand.load();
         }
 
         /**
          * 
          */
         this.render = function () {
-
+            
             if (!_domContext) 
             {
-                // note - markup can be fetched from server, inline (like current sample) or created manually
+                // note - markup can be fetched from server, inline (like current sample) or created manually (document.createElement)
                 var html = '\
                     Players \
             <ul id="players"> \
@@ -117,7 +75,6 @@
                 _init();
             }
 
-            // note - not supported by IE < 9
             return _domContext;
         }
     };

@@ -1,9 +1,60 @@
 var Router = function (config) {
 
+    var _this = this;
+
     var _routes = config.routes;
+    var _filters = [];
     var _routesByName = {};
 
-    var _currentState;
+    var _routeData;
+    var _url;
+
+    Object.defineProperties(this, {
+        "routeData": {
+            get: function () {
+                return _routeData;
+            }
+        },
+        "url": {
+            get: function () {
+                return _url;
+            }
+        }
+    });
+
+    /**
+     * Register handler to be used
+     */
+    this.use = function (handler) {
+        _filters.push(handler);
+        return _this;
+    };
+
+    var _errorHandler = function (next) {
+
+        try {
+            next();
+        }
+        catch(e) {
+            console.error(e);
+        }
+    };
+    this.use(_errorHandler);
+
+    var _virtualDirectoryHandler = function (next) {
+        if (config.virtualDirectory) {
+            _url = _url.replace(config.virtualDirectory, "");
+        }
+        next();
+    };
+    this.use(_virtualDirectoryHandler);
+
+    var _routeHandler = function (next) {
+        _routeData = this.matchRoute(_url);
+        next();
+    };
+    this.use(_routeHandler);
+
 
     // create regex patterns for route patterns
     (function () {
@@ -181,32 +232,36 @@ var Router = function (config) {
      */
     this.start = function (url) {
 
-        if (config.virtualDirectory) {
-            url = url.replace(config.virtualDirectory, "");
+        _url = url;
+        
+        var next = function() {};
+        for (var i = _filters.length-1; i >= 0; i--) {
+            next = (function (f, next) {
+                return function () {
+                    f.call(_this, next, config);
+                };
+            })(_filters[i], next);
         }
 
-        var res = this.matchRoute(url);
-        _currentState = res;
-        
-        var controllerName = res.parameters.controller + "controller";
-        var controller = Controller.create(controllerName);
-
-        var actionName = res.parameters.action;
-        var action = Controller.getAction(controller, actionName);
-
-        var view = action.call(controller, res.requestParameters);
-        var content = view.render();
-
-        config.body.innerHTML = "";
-        config.body.appendChild(content);
+        next();
     };
     
     /**
      * 
      */
     this.navigateToAction = function (actionName, controllerName, parameters) {
+        
+        var url = this.urlAction(actionName, controllerName, parameters);
+        window.history.pushState({}, "", url);
+        this.start(url);
+    };
 
-        var url = this.urlAction(actionName, controllerName, parameters)
+    /**
+     * 
+     */
+    this.navigateToRoute = function (routeName, parameters) {
+        
+        var url = this.urlRoute(routeName, parameters);
         window.history.pushState({}, "", url);
         this.start(url);
     };
@@ -228,8 +283,8 @@ var Router = function (config) {
         parameters.action = actionName;
         parameters.controller = controllerName;
 
-        if (parameters.controller === undefined && _currentState) {
-            parameters.controller = _currentState.controller;
+        if (parameters.controller === undefined && _routeData) {
+            parameters.controller = _routeData.controller;
         }
 
         var routeName = this.matchRouteByParams(parameters);
@@ -273,3 +328,20 @@ var Router = function (config) {
     }
 
 };  
+
+Router.actionHandler = function (next, config) {
+
+    var controllerName = this.routeData.parameters.controller + "controller";
+    var controller = Controller.create(controllerName);
+
+    var actionName = this.routeData.parameters.action;
+    var action = Controller.getAction(controller, actionName);
+
+    var view = action.call(controller, this.routeData.requestParameters);
+    var content = view.render();
+
+    config.body.innerHTML = "";
+    config.body.appendChild(content);
+
+    next();
+};

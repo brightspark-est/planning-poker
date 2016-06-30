@@ -73,9 +73,12 @@ var PlayersList = function() {
 
 var PlayersListView = function (playersList, context) {
     
-    var _ul = _("#players", context);
+    var _ul;
     var _itemsViews = {};
-    
+    var _outerDomContext = context;
+
+    _ul = _("#players", _outerDomContext);
+
     // load template 
     var _el_itemTemplate = _(".template", _ul);
     _ul.removeChild(_el_itemTemplate);
@@ -136,4 +139,21 @@ var PlayersListView = function (playersList, context) {
         _ul.classList.remove("turn");                    
     });
     
+
+    this.render = function () {
+
+        //await( this.loadTemplate("/views/playersList.html") );
+
+        var html = '\
+            Players \
+            <ul id="players"> \
+                <li class="template"> \
+                    <span class="name"></span> \
+                    <span class="bet"></span> \
+                </li> \
+            </ul>';
+
+        
+    };
+
 };

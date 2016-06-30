@@ -1,5 +1,7 @@
-var HomeController = function HomeController() {
+var HomeController = (function HomeController() {
     
+    Controller.call(this);
+
     var _pokerTableSvc = DI.resolve("PokerTableSvc");
     var _app = DI.resolve("app");
 
@@ -7,15 +9,11 @@ var HomeController = function HomeController() {
 
     this.join = function (model) {
         
-        var res = _pokerTableSvc.server.join(model.name)
+        _pokerTableSvc.server.join(model.name)
             .then(function () {
-                console.log(this);
-                console.log(arguments);
-
+                _app.joined = true;
                 _app.navigateToAction("index", "table")
             });
-        // 
-        console.log(res);
     };
 
     /**
@@ -25,10 +23,6 @@ var HomeController = function HomeController() {
 
         return this.__partial(PlanningPoker, "views.home", "index");
     };
-};
-
-// inherit from base controller
-HomeController.prototype = new Controller(); 
-HomeController.prototype.constructor = HomeController;
+}).extends(Controller);
 
 Controller.addToFactory(HomeController);

@@ -325,47 +325,50 @@ var Indexed = function () {
      */
     function regIndex(ref, addEventName, removeEventName, indexCols, addFunc, removeFunc) {
 
-        _this.on(addEventName, function(o) {
+        if (addEventName) {
+            _this.on(addEventName, function(o) {
 
-            var temp = ref;
-            for (var i = 0; i < indexCols.length - 1; i++) {
+                var temp = ref;
+                for (var i = 0; i < indexCols.length - 1; i++) {
 
-                var propName = indexCols[i];
-                var propValue = o[propName];
-                if (!temp[propValue]) {
-                    temp[propValue] = {};
+                    var propName = indexCols[i];
+                    var propValue = o[propName];
+                    if (!temp[propValue]) {
+                        temp[propValue] = {};
+                    }
+                    temp = temp[propValue];
                 }
-                temp = temp[propValue];
-            }
 
-            var x = indexCols[indexCols.length - 1];
-            var xval = o[x];
-            
-            addFunc(temp, xval, o);
-        });
-
-        function remove(ix, object, cols) {
-
-            var propName = cols[0];
-            var propValue = object[propName];
-
-            if (cols.length === 1) {
-                removeFunc(ix, propValue, object);
-                return;
-            }
-
-            remove(ix[propValue], object, cols.splice(1));
-
-            if (isEmpty(ix[propValue])) {
-                delete ix[propValue];
-            }
+                var x = indexCols[indexCols.length - 1];
+                var xval = o[x];
+                
+                addFunc(temp, xval, o);
+            });
         }
 
-        _this.on(removeEventName, function (o) {
-            var cols = indexCols.slice(0);
-            remove(ref, o, cols);
-        });
+        if (removeEventName) {
+            function remove(ix, object, cols) {
 
+                var propName = cols[0];
+                var propValue = object[propName];
+
+                if (cols.length === 1) {
+                    removeFunc(ix, propValue, object);
+                    return;
+                }
+
+                remove(ix[propValue], object, cols.splice(1));
+
+                if (isEmpty(ix[propValue])) {
+                    delete ix[propValue];
+                }
+            }
+
+            _this.on(removeEventName, function (o) {
+                var cols = indexCols.slice(0);
+                remove(ref, o, cols);
+            });
+        }
     }
 
     /**
@@ -658,3 +661,18 @@ var Router = function (rootUrl) {
         }
     };*/
 };
+
+
+Function.prototype.extends = function (baseType) {
+    var inheritedType = this;
+    inheritedType.prototype = Object.create(baseType.prototype);
+    // inheritedType.prototype.constructor = inheritedType;
+
+    inheritedType.prototype.constructor = function () {
+
+        baseType.call(this);
+        inheritedType.apply(this, arguments);
+
+    };
+    return inheritedType;
+}

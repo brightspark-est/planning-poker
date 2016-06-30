@@ -33,6 +33,7 @@
         <script src="views/home/index.js"></script>
         <script src="views/home/table.js"></script>
 
+        <script src="components/Hand.js"></script>
         <script src="components/Card.js"></script>
         <script src="components/PlayersList.js"></script>
         <script src="components/Player.js"></script>
@@ -53,22 +54,11 @@
                 
         <script type="text/javascript">
 
-            
             (function (pp) {
             
                 var app = new Router({
                     virtualDirectory: '/planning.poker.vanillajs',
-
-                    controllersNS: pp.controllers,
-                    viewsNS: pp.views,
-
                     body: _("#body-section"),
-
-                    filters: [
-                        function () {
-                            // if not joined, redirect to home
-                        }
-                    ],
                     routes: [
                         {
                             name: "home",
@@ -97,7 +87,19 @@
                         }
                     ]
                 });
-                
+
+                app.use(function (next, config) {
+                    // if not joined, redirect to home
+                    if (this.routeData.name != "home" && !this.joined) {
+                        this.navigateToRoute("home");
+                        return;
+                    }
+
+                    next();
+                });
+
+                app.use(Router.actionHandler);
+
                 DI.register("app", Router, function () {
                     return app;
                 });
