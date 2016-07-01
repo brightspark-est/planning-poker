@@ -331,6 +331,12 @@ var Router = function (config) {
 
 Router.actionHandler = function (next, config) {
 
+
+    var prevContent = config.body.firstElementChild;
+    if (prevContent) {
+        prevContent.className = prevContent.className.replace("loaded", "") + " unloaded";
+    }
+
     var controllerName = this.routeData.parameters.controller + "controller";
     var controller = Controller.create(controllerName);
 
@@ -340,8 +346,15 @@ Router.actionHandler = function (next, config) {
     var view = action.call(controller, this.routeData.requestParameters);
     var content = view.render();
 
-    config.body.innerHTML = "";
+    content.className += " content";
+
+    //config.body.innerHTML = "";
     config.body.appendChild(content);
+
+    setTimeout(function() {
+        content.className += " loaded";    
+    }, 0);
+    
 
     next();
 };

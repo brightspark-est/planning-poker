@@ -35,19 +35,21 @@
             {
                 // note - markup can be fetched from server, inline (like current sample) or created manually
                 var html = '\
+                    <h1>Planning Poker</h1> \
                     <form id="join-form" action=""> \
                         <input type="text" id="name"/> \
                         <button type="submit">Join</button> \
                     </form>';
 
                 _domContext = document.createElement("div");
+                _domContext.className = "join";
                 _domContext.innerHTML = html;
 
                 _init();
             }
 
             // note - not supported by IE < 9
-            return _domContext.firstElementChild;
+            return _domContext;
         }
     };
 

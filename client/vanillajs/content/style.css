@@ -1,0 +1,153 @@
+body {
+    background: url('images/stack-of-chips.jpg'); 
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.content {
+    opacity: 0;
+    transition: opacity 1s, margin-top 1s ease-out;
+    position: relative;
+}
+
+.content.loaded {
+    opacity: 1;
+}
+
+
+
+.content.unloaded {
+    margin-top: -100%;
+    z-index: -1;
+    position: absolute;
+}
+
+.join {
+
+    width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 200px;
+    text-align: center;
+
+}
+
+.join h1 {
+    color: #fff;
+    margin-bottom: 40px
+}
+
+.join #join-form {
+    display: flex;
+}
+
+.join input[type=text] {
+    width: 100%;
+    border: 0;
+    font-size: 16px;
+    padding: 10px 15px;   
+    flex: 1 100%;
+}
+
+
+.join button {
+    font-size: 16px;
+    color: #fff;
+    text-align: center;
+    background: #347b73;
+    border: 0;
+    padding: 10px 15px;
+    flex: 1;
+}
+
+.table {
+    display: flex;
+    display: -webkit-flex;
+    flex-direction: row;
+    -webkit-flex-direction: row;
+    -webkit-align-content: stretch;
+    align-content: stretch;
+}
+
+.table::after {
+    content: ' ';
+    display: table;
+    clear: both
+}
+
+
+.table #players-list-container {
+    width: 300px;
+}
+
+
+.table #hand {
+    margin-left: 20px;
+    flex: 1;
+}
+
+
+div, ul, li {
+    box-sizing: border-box;
+}
+
+.template {
+    display: none;
+}
+
+#hand ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 20px;
+    display: flex;
+}
+
+#hand ul.high {
+    margin: 0 7%;
+}
+
+#players .bet {
+    display: none;
+}
+
+#players li.ready {
+    background: #090;
+    color: #fff;
+}
+
+#players.turn .bet {
+    display: initial;
+}
+
+#hand li {
+    font-size: 60pt;
+    flex: 1;
+    line-height: 300px;
+    text-align: center;
+    background: #446479;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    margin: 0 10px;
+    font-weight: 100;
+    color: #fff;
+}
+
+#hand li:hover {
+    background: #8da4b3;
+}
+
+#hand li.selected {
+    color: #fff;
+    background: #555;
+}
+
+#hand ul:after {
+    content: " ";
+    display: table;
+    clear: both
+}

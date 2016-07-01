@@ -666,13 +666,13 @@ var Router = function (rootUrl) {
 Function.prototype.extends = function (baseType) {
     var inheritedType = this;
     inheritedType.prototype = Object.create(baseType.prototype);
-    // inheritedType.prototype.constructor = inheritedType;
+    inheritedType.prototype.constructor = inheritedType;
 
-    inheritedType.prototype.constructor = function () {
+    // inheritedType.prototype.constructor = function () {
 
-        baseType.call(this);
-        inheritedType.apply(this, arguments);
+    //     baseType.call(this);
+    //     inheritedType.apply(this, arguments);
 
-    };
+    // };
     return inheritedType;
 }

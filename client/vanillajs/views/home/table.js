@@ -40,36 +40,39 @@
             {
                 // note - markup can be fetched from server, inline (like current sample) or created manually (document.createElement)
                 var html = '\
+                <div id="players-list-container"> \
                     Players \
-            <ul id="players"> \
-                <li class="template"> \
-                    <span class="name"></span> \
-                    <span class="bet"></span> \
-                </li> \
-            </ul> \
-            <div id="hand"> \
-                <li class="template card-template"></li> \
-                <ul class="low"> \
-                    <li>0</li> \
-                    <li>1/2</li> \
-                    <li>1</li> \
-                    <li>2</li> \
-                    <li>3</li> \
-                    <li>5</li> \
-                    <li>8</li> \
-                </ul> \
-                <ul class="high"> \
-                    <li>13</li> \
-                    <li>20</li> \
-                    <li>40</li> \
-                    <li>100</li> \
-                    <li>?</li> \
-                    <li>&#x221e;</li> \
-                </ul> \
-            </div> \
-            <button id="reset">Reset</button>';
+                    <ul id="players"> \
+                        <li class="template"> \
+                            <span class="name"></span> \
+                            <span class="bet"></span> \
+                        </li> \
+                    </ul> \
+                </div> \
+                <div id="hand"> \
+                    <li class="template card-template"></li> \
+                    <ul class="low"> \
+                        <li>0</li> \
+                        <li>1/2</li> \
+                        <li>1</li> \
+                        <li>2</li> \
+                        <li>3</li> \
+                        <li>5</li> \
+                        <li>8</li> \
+                    </ul> \
+                    <ul class="high"> \
+                        <li>13</li> \
+                        <li>20</li> \
+                        <li>40</li> \
+                        <li>100</li> \
+                        <li>?</li> \
+                        <li>&#x221e;</li> \
+                    </ul> \
+                    <button id="reset">Reset</button> \
+                </div>';
 
                 _domContext = document.createElement("div");
+                _domContext.className = "table";
                 _domContext.innerHTML = html;
 
                 _init();

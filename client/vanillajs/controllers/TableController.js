@@ -1,5 +1,6 @@
 var TableController = (function TableController() {
     
+    Controller.call(this);
     // var _pokerTableSvc = DI.resolve("PokerTableSvc");
     // var _app = DI.resolve("app");
 
