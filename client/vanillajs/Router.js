@@ -30,16 +30,16 @@ var Router = function (config) {
         return _this;
     };
 
-    var _errorHandler = function (next) {
+    // var _errorHandler = function (next) {
 
-        try {
-            next();
-        }
-        catch(e) {
-            console.error(e);
-        }
-    };
-    this.use(_errorHandler);
+    //     try {
+    //         next();
+    //     }
+    //     catch(e) {
+    //         console.error(e);
+    //     }
+    // };
+    // this.use(_errorHandler);
 
     var _virtualDirectoryHandler = function (next) {
         if (config.virtualDirectory) {
@@ -344,6 +344,8 @@ Router.actionHandler = function (next, config) {
     var action = Controller.getAction(controller, actionName);
 
     var view = action.call(controller, this.routeData.requestParameters);
+
+    // todo - use render engine HERE
     var content = view.render();
 
     content.className += " content";

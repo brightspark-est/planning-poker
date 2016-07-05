@@ -77,68 +77,70 @@ var PlayersListView = function (playersList, context) {
     var _itemsViews = {};
     var _outerDomContext = context;
 
-    _ul = _("#players", _outerDomContext);
+    this.init = function () {
 
-    // load template 
-    var _el_itemTemplate = _(".template", _ul);
-    _ul.removeChild(_el_itemTemplate);
-    _el_itemTemplate.classList.remove("template");
-    var itemTemplate = _el_itemTemplate.outerHTML;
-    
-    playersList.on("add", function (player) {
+        _ul = _("#players", _outerDomContext);
 
-        // create player view                    
-        var li = parseHtml(itemTemplate);
-        if (player.hasMadeBet) {
-            li.classList.add("ready");
-        }
-
-        var view = {
-            li: li,
-            el_playerName: _(".name", li),
-            el_bet: _(".bet", li)
-        };
+        // load template 
+        var _el_itemTemplate = _(".template", _ul);
+        _ul.removeChild(_el_itemTemplate);
+        _el_itemTemplate.classList.remove("template");
+        var itemTemplate = _el_itemTemplate.outerHTML;
         
-        _itemsViews[player.cid] = view;
-        
-        // init
-        view.el_playerName.innerHTML = player.name;
-        
-        // update DOM on property changed event
-        player
-            .propertyChanged("name", function (val) {
-                view.el_playerName.innerHTML = val;
-            })
-            .propertyChanged("bet", function (val) {
-                view.el_bet.innerHTML = val;
-            })
-            .propertyChanged("hasMadeBet", function (val) {
-                if (val) {
-                    view.li.classList.add("ready");
-                }
-                else {
-                    view.li.classList.remove("ready");
-                }
-            });
+        playersList.on("add", function (player) {
 
-        _ul.appendChild(li);
-    });
-    
-    playersList.on("remove", function (player) {
-        if (player) {
-            var view = _itemsViews[player.cid];
-            _ul.removeChild(view.li);
-        }
-    });
-    
-    playersList.on("turn", function () {
-        _ul.classList.add("turn");                    
-    });
-    
-    playersList.on("clearBets", function () {
-        _ul.classList.remove("turn");                    
-    });
-    
+            // create player view                    
+            var li = parseHtml(itemTemplate);
+            if (player.hasMadeBet) {
+                li.classList.add("ready");
+            }
+
+            var view = {
+                li: li,
+                el_playerName: _(".name", li),
+                el_bet: _(".bet", li)
+            };
+            
+            _itemsViews[player.cid] = view;
+            
+            // init
+            view.el_playerName.innerHTML = player.name;
+            
+            // update DOM on property changed event
+            player
+                .propertyChanged("name", function (val) {
+                    view.el_playerName.innerHTML = val;
+                })
+                .propertyChanged("bet", function (val) {
+                    view.el_bet.innerHTML = val;
+                })
+                .propertyChanged("hasMadeBet", function (val) {
+                    if (val) {
+                        view.li.classList.add("ready");
+                    }
+                    else {
+                        view.li.classList.remove("ready");
+                    }
+                });
+
+            _ul.appendChild(li);
+        });
+        
+        playersList.on("remove", function (player) {
+            if (player) {
+                var view = _itemsViews[player.cid];
+                _ul.removeChild(view.li);
+            }
+        });
+        
+        playersList.on("turn", function () {
+            _ul.classList.add("turn");                    
+        });
+        
+        playersList.on("clearBets", function () {
+            _ul.classList.remove("turn");                    
+        });
+    };    
 
     this.render = function () {
 
@@ -153,7 +155,7 @@ var PlayersListView = function (playersList, context) {
                 </li> \
             </ul>';
 
-        
+        return html;
     };
 
 };
