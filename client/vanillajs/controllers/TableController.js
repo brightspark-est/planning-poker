@@ -42,5 +42,3 @@ var TableController = (function TableController() {
         return this.__partial(PlanningPoker, "views.home", "table");
     }
 }).extends(Controller);
-
-Controller.addToFactory(TableController);

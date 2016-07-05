@@ -23,6 +23,5 @@ var HomeController = (function HomeController() {
 
         return this.__partial(PlanningPoker, "views.home", "index");
     };
+    
 }).extends(Controller);
-
-Controller.addToFactory(HomeController);

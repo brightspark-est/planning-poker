@@ -88,6 +88,12 @@
                     ]
                 });
 
+                app.controllerFactory = new (function () {
+                    this.create = function (name) {
+                        return DI.resolve("controller." + name);
+                    }
+                });
+
                 app.use(function (next, config) {
                     // if not joined, redirect to home
                     if (this.routeData.name != "home" && !this.joined) {
@@ -100,9 +106,14 @@
 
                 app.use(Router.actionHandler);
 
+                
+
                 DI.register("app", Router, function () {
                     return app;
                 });
+
+                DI.register("controller.home", HomeController, DI.singleton);
+                DI.register("controller.table", TableController, DI.singleton);
 
                 DI.register("component.playersList.view", PlayersListView, DI.transient);
                 DI.register("component.hand.view", HandView, DI.transient);

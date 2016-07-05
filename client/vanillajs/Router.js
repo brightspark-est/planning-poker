@@ -30,16 +30,16 @@ var Router = function (config) {
         return _this;
     };
 
-    var _errorHandler = function (next) {
+    // var _errorHandler = function (next) {
 
-        try {
-            next();
-        }
-        catch(e) {
-            console.error(e);
-        }
-    };
-    this.use(_errorHandler);
+    //     try {
+    //         next();
+    //     }
+    //     catch(e) {
+    //         console.error(e);
+    //     }
+    // };
+    // this.use(_errorHandler);
 
     var _virtualDirectoryHandler = function (next) {
         if (config.virtualDirectory) {
@@ -337,8 +337,12 @@ Router.actionHandler = function (next, config) {
         prevContent.className = prevContent.className.replace("loaded", "") + " unloaded";
     }
 
-    var controllerName = this.routeData.parameters.controller + "controller";
-    var controller = Controller.create(controllerName);
+    
+    var controller = this.controllerFactory.create(this.routeData.parameters.controller);
+
+    // todo - move this into default controller factory
+    // var controllerName = this.routeData.parameters.controller + "controller";
+    // var controller = Controller.create(controllerName);
 
     var actionName = this.routeData.parameters.action;
     var action = Controller.getAction(controller, actionName);
