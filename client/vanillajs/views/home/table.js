@@ -1,8 +1,6 @@
-(function (pp) {
+NS("views.home", function () {
 
-    var _ns_home = NS.require(pp, "views.home");
-
-    _ns_home.table = function Table(model) {
+    this.table = function (model) {
 
         // components        
         var _playersList;
@@ -66,4 +64,4 @@
         }
     };
 
-})(PlanningPoker);
+});

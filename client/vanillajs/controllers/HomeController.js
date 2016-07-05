@@ -17,11 +17,16 @@ var HomeController = (function HomeController() {
     };
 
     /**
-     * 
+     * Render join form
      */
-    this.index = function () {
-
-        return this.__partial(PlanningPoker, "views.home", "index");
+    this.index = function index() {
+        // note that function has also name
+        return this.__partial();
     };
+
+    // ALT2 
+    // this.index = function () {
+    //     return this.__partial("index");
+    // };
     
 }).extends(Controller);

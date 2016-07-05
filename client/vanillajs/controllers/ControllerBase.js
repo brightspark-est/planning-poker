@@ -7,17 +7,30 @@ var Controller = function() {
 
     }
 
-    this.__partial = function (nsRef, ns, viewName) {
+    this.__partial = function (viewName) {
 
-        var key = ns + "." + viewName;
+        if (!viewName) {
+            viewName = arguments.callee.caller.name;
+        }
+        
+        if (viewName.charAt("0") !== "/") {
+            var controllerName = this.constructor.name.toLowerCase().replace("controller", "");
+            viewName = "/views/" + controllerName + "/" + viewName;
+        }
+        
+        var key = viewName.slice(1).replace(/\//g, ".");
         if (!_view_cache[key]) {
-            var context = NS.require(nsRef, ns);
-            _view_cache[key] = new context[viewName](this);
+            var view = NS.require(key);
+            _view_cache[key] = new view(this);
         }
 
         return _view_cache[key];
-    }
-        
+    };
+    
+    this.unknownAction = function (actionName) {
+        // default unknown action handler
+    };
+
 };
 
 (function factory() {

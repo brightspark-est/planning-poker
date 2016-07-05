@@ -331,13 +331,17 @@ var Router = function (config) {
 
 Router.actionHandler = function (next, config) {
 
+    // pre-render
 
+    // default behaviour
+    // config.body.innerHTML = "";
+    
     var prevContent = config.body.firstElementChild;
     if (prevContent) {
         prevContent.className = prevContent.className.replace("loaded", "") + " unloaded";
     }
 
-    
+    // render
     var controller = this.controllerFactory.create(this.routeData.parameters.controller);
 
     // todo - move this into default controller factory
@@ -347,16 +351,22 @@ Router.actionHandler = function (next, config) {
     var actionName = this.routeData.parameters.action;
     var action = Controller.getAction(controller, actionName);
 
-    var view = action.call(controller, this.routeData.requestParameters);
+    var actionResult;
+    if (!action) {
+        actionResult = controller.unknownAction(actionName);
+    }
+    else { 
+        actionResult = action.call(controller, this.routeData.requestParameters);
+    }
 
     // todo - use render engine HERE
-    var content = view.render();
+    var content = actionResult.render();
 
     content.className += " content";
 
-    //config.body.innerHTML = "";
     config.body.appendChild(content);
 
+    // post-render
     setTimeout(function() {
         content.className += " loaded";    
     }, 0);

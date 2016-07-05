@@ -58,24 +58,43 @@ var DI;
 })(window);
 
  
+(function (w) {
 
-var NS = new (function NS() {
+    var _scope = w;
 
-    this.require = function (ref, ns) {
+    var require = function (ns) {
 
-        ref = ref || {};
-
-        if (ns) {
-            var segments = ns.split(" ");
-            for (var i = 0; i < segments.length; i++) {
-                var name = segments[i];
-                if (!(name in ref)) {
-                    ref[name] = {};
-                }
-                ref = ref[name];
+        var ref = _scope;
+        
+        var segments = ns.split(".");
+        for (var i = 0; i < segments.length; i++) {
+            var name = segments[i];
+            if (!(name in ref)) {
+                ref[name] = {};
             }
+            ref = ref[name];
         }
 
         return ref;
+    };
+    
+    w.NS = function NS(nsString, f) {
+        var ns = require(nsString);
+        f.call(ns);
+    };
+
+    w.NS.require = require;
+
+    var nsInited = false;
+    w.NS.init = function (scope) {
+
+        if (nsInited) {
+            console.error("NS already initialized");
+            return;
+        }
+
+        _scope = scope;
+        nsInited = true;
     }
-});
+
+})(window);

@@ -1,8 +1,6 @@
-(function (pp) {
+NS("views.home", function () {
 
-    var _ns_home = NS.require(pp, "views.home");
-
-    _ns_home.index = function Index(model) {
+    this.index = function (model) {
         
         var _this = this;
         var _model = model;
@@ -52,5 +50,4 @@
             return _domContext;
         }
     };
-
-})(PlanningPoker);
+});

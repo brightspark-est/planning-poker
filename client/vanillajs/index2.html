@@ -21,6 +21,7 @@
 
         <script type="text/javascript">
             var PlanningPoker = {};
+            NS.init(PlanningPoker);
         </script>
 
         
@@ -89,12 +90,6 @@
                     ]
                 });
 
-                app.controllerFactory = new (function () {
-                    this.create = function (name) {
-                        return DI.resolve("controller." + name);
-                    }
-                });
-
                 app.use(function (next, config) {
                     // if not joined, redirect to home
                     if (this.routeData.name != "home" && !this.joined) {
@@ -107,7 +102,7 @@
 
                 app.use(Router.actionHandler);
 
-                
+                //#region DI
 
                 DI.register("app", Router, function () {
                     return app;
@@ -117,11 +112,13 @@
                 DI.register("controller.table", TableController, DI.singleton);
 
                 DI.register("component.playersList", PlayersList, DI.transient);
-                DI.register("component.hand", Hand, DI.transient);
-
                 DI.register("component.playersList.view", PlayersListView, DI.transient);
+                
+                DI.register("component.hand", Hand, DI.transient);
                 DI.register("component.hand.view", HandView, DI.transient);
         
+                //#endregion
+
                 Re.componentFactory = new (function () {
                     this.create = function (name) {
                         return DI.resolve("component." + name);
@@ -132,7 +129,14 @@
                     };
                 });
 
-                // Start the connection
+                app.controllerFactory = new (function () {
+                    this.create = function (name) {
+                        return DI.resolve("controller." + name);
+                    }
+                });
+
+
+                // Start the connection and then start app
                 DI.resolve("PokerTableSvc").hub
                     .start()
                     .then(function () {
