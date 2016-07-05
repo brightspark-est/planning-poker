@@ -26,17 +26,19 @@ body {
 
 .join {
 
-    width: 400px;
+    width: 600px;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 200px;
+    margin-top: 250px;
     text-align: center;
 
 }
 
 .join h1 {
     color: #fff;
-    margin-bottom: 40px
+    margin-bottom: 40px;
+    font-size: 4em;
+    font-weight: 100;
 }
 
 .join #join-form {

@@ -17,6 +17,7 @@
         
         <script src="DI.js"></script>
         <script src="Router.js"></script>
+        <script src="RenderEngine.js"></script>
 
         <script type="text/javascript">
             var PlanningPoker = {};
@@ -115,9 +116,22 @@
                 DI.register("controller.home", HomeController, DI.singleton);
                 DI.register("controller.table", TableController, DI.singleton);
 
+                DI.register("component.playersList", PlayersList, DI.transient);
+                DI.register("component.hand", Hand, DI.transient);
+
                 DI.register("component.playersList.view", PlayersListView, DI.transient);
                 DI.register("component.hand.view", HandView, DI.transient);
         
+                Re.componentFactory = new (function () {
+                    this.create = function (name) {
+                        return DI.resolve("component." + name);
+                    };
+
+                    this.createView = function (name, component, DOMcontext)  {
+                        return DI.resolve("component." + name + ".view", component, DOMcontext);
+                    };
+                });
+
                 // Start the connection
                 DI.resolve("PokerTableSvc").hub
                     .start()

@@ -20,6 +20,7 @@ var DI;
                 key = type.name;
             }
 
+            key = key.toLowerCase();
             _registry[key] = {
                 name: key,
                 type: type,
@@ -28,7 +29,8 @@ var DI;
         };
 
         this.resolve = function (serviceName) {
-            var svcDefinition = _registry[serviceName];
+            var key = serviceName.toLowerCase();
+            var svcDefinition = _registry[key];
 
             var args = [].slice.call(arguments, 1);
             return svcDefinition.resolve.apply(svcDefinition, args);

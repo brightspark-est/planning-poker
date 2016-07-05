@@ -348,6 +348,8 @@ Router.actionHandler = function (next, config) {
     var action = Controller.getAction(controller, actionName);
 
     var view = action.call(controller, this.routeData.requestParameters);
+
+    // todo - use render engine HERE
     var content = view.render();
 
     content.className += " content";
