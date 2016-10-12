@@ -8,6 +8,19 @@ describe("RenderEgine", function() {
         }
         
     };
+    
+    var DummyComponentView = function DummyComponentView (dummyComponent, domContext) {
+        
+        this.render = function () {
+            
+            var div = document.createElement("div");
+
+            var html = "OK!";
+            div.innerHTML = html;
+
+            return div.childNodes;            
+        };
+    }
 
     Re.componentFactory = new (function () {
         
@@ -16,7 +29,17 @@ describe("RenderEgine", function() {
             return new DummyComponent();
         };
         
+        this.createView = function () {
+            
+            return new DummyComponentView();
+        }
+        
     });
+
+    it("should do it", function () {
+        
+        var x = Re.render2("<div><component:x /></div>");
+    })
 
     it("should replace component container with its html", function() {
  

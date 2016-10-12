@@ -13,7 +13,7 @@ NS("views.home", function () {
         var _this = this;
         var _model = model;
 
-        var _domContext;
+        var _dom;
 
         // /**
         //  * 
@@ -34,33 +34,28 @@ NS("views.home", function () {
          */
         this.render = function () {
             
-            if (!_domContext) 
+            if (!_dom) 
             {
-                _domContext = document.createElement("div");
-                _domContext.className = "table";
-
                 // note - markup can be fetched from server, inline (like current sample) or created manually (document.createElement)
                 var template = '\
-                <div id="players-list-container"> \
-                    <component:PlayersList /> \
-                </div> \
-                <div id="hand"> \
-                    <component:Hand /> \
+                <div class="table"> \
+                    <div id="players-list-container"> \
+                        <component:PlayersList /> \
+                    </div> \
+                    <div id="hand"> \
+                        <component:Hand /> \
+                    </div> \
                 </div>';
 
-                var view = Re.render(template, _domContext);
+                var r = Re.render2(template);
 
-                _domContext.innerHTML = view.html;
-                // todo - get rid of this
-                view.complete();
-                
-                _playersList = view.model.playersList;
-                _hand = view.model.hand;
+                _dom = r.dom;
+                _playersList = r.components.playerslist;
+                _hand = r.components.hand;
 
-                // _init();
             }
 
-            return _domContext;
+            return _dom;
         }
     };
 

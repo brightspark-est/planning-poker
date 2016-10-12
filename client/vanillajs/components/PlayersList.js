@@ -71,15 +71,14 @@ var PlayersList = function() {
 };
 
 
-var PlayersListView = function (playersList, context) {
+var PlayersListView = function (playersList) {
     
     var _ul;
     var _itemsViews = {};
-    var _outerDomContext = context;
 
-    this.init = function () {
+    this.init = function (context) {
 
-        _ul = _("#players", _outerDomContext);
+        _ul = _("#players", context);
 
         // load template 
         var _el_itemTemplate = _(".template", _ul);
@@ -155,7 +154,8 @@ var PlayersListView = function (playersList, context) {
                 </li> \
             </ul>';
 
-        return html;
+        var r = Re.render2(html);
+        return r.dom;
     };
 
 };

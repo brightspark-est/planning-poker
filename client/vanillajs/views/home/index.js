@@ -5,17 +5,15 @@ NS("views.home", function () {
         var _this = this;
         var _model = model;
 
-        var _domContext;
-
         var _el_joinform;    
         var _el_name;
 
         /**
          * 
          */
-        var _init = function () {
+        var _init = function (domContext) {
 
-            _el_joinform = _("#join-form", _domContext);
+            _el_joinform = _("#join-form", domContext);
             _el_name = _("#name", _el_joinform);
 
             _el_joinform.addEventListener("submit", function(e) {
@@ -29,25 +27,20 @@ NS("views.home", function () {
          */
         this.render = function () {
 
-            if (!_domContext) 
-            {
-                // note - markup can be fetched from server, inline (like current sample) or created manually
-                var html = '\
+            // note - markup can be fetched from server, inline (like current sample) or created manually
+            var html = '\
+                <div class="join"> \
                     <h1>Planning Poker</h1> \
                     <form id="join-form" action=""> \
                         <input type="text" id="name"/> \
                         <button type="submit">Join</button> \
-                    </form>';
-
-                _domContext = document.createElement("div");
-                _domContext.className = "join";
-                _domContext.innerHTML = html;
-
-                _init();
-            }
-
-            // note - not supported by IE < 9
-            return _domContext;
+                    </form> \
+                </div>';
+            
+            var r = Re.render2(html);
+            _init(r.domContext);
+            
+            return r.dom;
         }
     };
 });

@@ -8,7 +8,78 @@ var Re = new (function RenderEngine() {
     renderedHtml.prototype.toString = function () {
         return this.html;
     };
+    
+    var insertAfter = function (newNode, referenceNode) {
+        referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+    }
+    
+    var removeElement = function (el) {
+        el.parentElement.removeChild(el);
+    }
 
+    _this.render2 = function (template) {
+        
+        var div = document.createElement("div");
+        div.innerHTML = template;
+        
+        var all = div.querySelectorAll("*");
+        
+        var components = {};
+        
+        // keep track of not named components count
+        var counts = {};
+        
+        for (var i = 0; i < all.length; i++) {
+            
+            var el = all[i];
+            var elTagName = el.tagName;
+            
+            var m = elTagName.match(/^component:([a-zA-Z][a-zA-Z0-9]*)/i);
+            if (m) {
+                var componentName = m[1];
+                var component = _this.componentFactory.create(componentName);
+                
+                var name = el.getAttribute("name");
+                if (!name) {
+                    // convention for not named components
+                    name = componentName.toLowerCase()
+                    if (!counts[name]) {
+                        counts[name] = 1;
+                    }
+                    else {
+                        name += counts[name];
+                    }
+                    counts[name] +=1;
+                }
+                else {
+                    name = name.toLowerCase();
+                }
+                components[name] = component;
+                                
+                var view = _this.componentFactory.createView(componentName, component, el);
+                var componentViewDom = view.render();
+                
+                while (componentViewDom.length) {
+                    el.parentNode.insertBefore(componentViewDom[0], el);
+                }
+                
+                removeElement(el);
+                
+                view.init(div);
+                component.load();
+            }
+        }
+        
+        return {
+            components: components,
+            domContext: div,
+            dom: div.childNodes
+        };
+    }
+
+    /**
+     * Render string template
+     */
     _this.render = function (template, domContext) {
 
         // 
@@ -18,7 +89,7 @@ var Re = new (function RenderEngine() {
         var counts = {};
 
         var components = [];
-
+        
         var html = template.replace(/<component:([a-zA-Z][a-zA-Z0-9]*)(.*?)(?:\/>|$)/gi, function (s, componentName, attributesString) {
 
             var component = _this.componentFactory.create(componentName);

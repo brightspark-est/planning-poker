@@ -65,7 +65,7 @@ var Hand = function() {
     }
 };
 
-var HandView = function (hand, context) {
+var HandView = function (hand) {
 
     var _model = hand;
 
@@ -90,7 +90,7 @@ var HandView = function (hand, context) {
         })(li, card);
     }
 
-    this.init = function () {
+    this.init = function (context) {
         
         _el_hand = _("#hand", context);
         _el_btnReset = _("#reset", context);
@@ -136,7 +136,9 @@ var HandView = function (hand, context) {
                     </ul> \
                     <button id="reset">Reset</button>';
 
-        return html;
+        
+        var r = Re.render2(html);
+        return r.dom;
     };
 
 }

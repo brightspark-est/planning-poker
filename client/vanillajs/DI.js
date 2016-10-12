@@ -62,6 +62,9 @@ var DI;
 
     var _scope = w;
 
+    /**
+     * Require object from given namespace
+     */
     var require = function (ns) {
 
         var ref = _scope;
@@ -86,6 +89,10 @@ var DI;
     w.NS.require = require;
 
     var nsInited = false;
+    /**
+     * Set scope.
+     * window if not defined
+     */
     w.NS.init = function (scope) {
 
         if (nsInited) {

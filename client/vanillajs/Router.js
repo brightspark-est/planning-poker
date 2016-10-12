@@ -329,48 +329,89 @@ var Router = function (config) {
 
 };  
 
+
 Router.actionHandler = function (next, config) {
-
-    // pre-render
-
-    // default behaviour
-    // config.body.innerHTML = "";
     
-    var prevContent = config.body.firstElementChild;
-    if (prevContent) {
-        prevContent.className = prevContent.className.replace("loaded", "") + " unloaded";
-    }
-
-    // render
+    config.body.innerHTML = "";
+    
     var controller = this.controllerFactory.create(this.routeData.parameters.controller);
-
-    // todo - move this into default controller factory
-    // var controllerName = this.routeData.parameters.controller + "controller";
-    // var controller = Controller.create(controllerName);
-
+    
     var actionName = this.routeData.parameters.action;
     var action = Controller.getAction(controller, actionName);
-
+    
     var actionResult;
     if (!action) {
-        actionResult = controller.unknownAction(actionName);
+        if (controller.unknownAction) {
+            actionResult = controller.unknownAction(actionName);
+        }
     }
     else { 
         actionResult = action.call(controller, this.routeData.requestParameters);
     }
-
-    // todo - use render engine HERE
+    
     var content = actionResult.render();
 
-    content.className += " content";
-
-    config.body.appendChild(content);
-
-    // post-render
-    setTimeout(function() {
-        content.className += " loaded";    
-    }, 0);
-    
+    if (content instanceof NodeList) {
+        while (content.length) {
+            config.body.appendChild(content[0]);
+        }
+    }
+    else {
+        // content.className += " content";
+        config.body.appendChild(content);
+    }
 
     next();
-};
+}
+
+// Router.actionHandler = function (next, config) {
+
+//     // pre-render
+
+//     // default behaviour
+//     // config.body.innerHTML = "";
+    
+//     var prevContent = config.body.firstElementChild;
+//     if (prevContent) {
+//         prevContent.className = prevContent.className.replace("loaded", "") + " unloaded";
+//     }
+
+//     // render
+//     var controller = this.controllerFactory.create(this.routeData.parameters.controller);
+
+//     // todo - move this into default controller factory
+//     // var controllerName = this.routeData.parameters.controller + "controller";
+//     // var controller = Controller.create(controllerName);
+
+//     var actionName = this.routeData.parameters.action;
+//     var action = Controller.getAction(controller, actionName);
+
+//     var actionResult;
+//     if (!action) {
+//         actionResult = controller.unknownAction(actionName);
+//     }
+//     else { 
+//         actionResult = action.call(controller, this.routeData.requestParameters);
+//     }
+
+//     // todo - use render engine HERE
+//     var content = actionResult.render();
+
+//     if (content instanceof NodeList) {
+//         for (var i = 0; i < content.length; i++) {
+//             config.body.appendChild(content[i]);
+//         }
+//     }
+//     else {
+//         content.className += " content";
+//         config.body.appendChild(content);
+//     }
+
+//     // post-render
+//     setTimeout(function() {
+//         content.className += " loaded";    
+//     }, 0);
+    
+
+//     next();
+// };
