@@ -146,7 +146,7 @@ var PlayersListView = function (playersList, context) {
 
         //await( this.loadTemplate("/views/playersList.html") );
 
-        var html = '\
+        var template = '\
             Players \
             <ul id="players"> \
                 <li class="template"> \
@@ -155,7 +155,17 @@ var PlayersListView = function (playersList, context) {
                 </li> \
             </ul>';
 
-        return html;
+        return template;
     };
 
 };
+
+
+PlayersListView.template = '\
+Players \
+<ul id="players"> \
+    <li class="template"> \
+        <span class="name"></span> \
+        <span class="bet"></span> \
+    </li> \
+</ul>';

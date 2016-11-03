@@ -15,6 +15,7 @@ NS("views.home", function () {
 
         var _domContext;
 
+
         // /**
         //  * 
         //  */
@@ -29,39 +30,77 @@ NS("views.home", function () {
         //     // _hand.load();
         // }
 
-        /**
-         * 
-         */
         this.render = function () {
+
+            var template = '<div id="players-list-container">\
+                        <component:PlayersList />\
+                    </div>\
+                    <div id="hand">\
+                        <component:Hand />\
+                    </div>';
+
+                        
+
+            var res = Re.render(template);
+
+            _this.publish("rendered", res);
+
+            return res;
+        };
+
+        // /**
+        //  * 
+        //  */
+        // this.render = function () {
             
-            if (!_domContext) 
-            {
-                _domContext = document.createElement("div");
-                _domContext.className = "table";
+        //     if (!_domContext) 
+        //     {
+        //         _domContext = document.createElement("div");
+        //         _domContext.className = "table";
 
-                // note - markup can be fetched from server, inline (like current sample) or created manually (document.createElement)
-                var template = '\
-                <div id="players-list-container"> \
-                    <component:PlayersList /> \
-                </div> \
-                <div id="hand"> \
-                    <component:Hand /> \
-                </div>';
+        //         // note - markup can be fetched from server, inline (like current sample) or created manually (document.createElement)
+        //         var template = '\
+        //         <div id="players-list-container"> \
+        //             <component:PlayersList /> \
+        //         </div> \
+        //         <div id="hand"> \
+        //             <component:Hand /> \
+        //         </div>';
 
-                var view = Re.render(template, _domContext);
+        //         var view = Re.render(template, _domContext);
 
-                _domContext.innerHTML = view.html;
-                // todo - get rid of this
-                view.complete();
+        //         _domContext.innerHTML = view.html;
+        //         // todo - get rid of this
+        //         view.complete();
                 
-                _playersList = view.model.playersList;
-                _hand = view.model.hand;
+        //         _playersList = view.model.playersList;
+        //         _hand = view.model.hand;
 
-                // _init();
-            }
+        //         // _init();
+        //     }
 
-            return _domContext;
-        }
+        //     return _domContext;
+        // }
     };
-
 });
+
+
+// // -----------------------------------------
+// // Re template -----------------------------
+// // GENERATED GODE --------------------------
+// // do not modify. changes will be overridden
+
+// NS("views.home", function () {
+//     this.table = (function () {
+//         View.call(this);
+//     }).extends(View);
+// });
+
+// NS("views.home.table").template = function () {
+//     return '<div id="players-list-container">\
+//     <component:PlayersList />\
+// </div>\
+// <div id="hand">\
+//     <component:Hand />\
+// </div>';
+// };
