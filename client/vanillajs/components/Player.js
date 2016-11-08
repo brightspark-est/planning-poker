@@ -1,20 +1,15 @@
 var Player = function(cid, name) {
 
-    var _this = this;
-    Observable.call(_this);
-    
-    var _cid = cid;
-    var _name = {val: name};
-    var _bet = { };
-    var _hasMadeBet = {val: false};
+    Observable.mixin(this);
 
-    Object.defineProperty(_this, "cid", {
-        get: function() { return _cid; }
-    });
-    
-    regStdProps(_this, {
-        name: _name,
-        bet: _bet,
-        hasMadeBet: _hasMadeBet
-    })
+	var _backingFields = {
+		cid: cid,
+		name: name,
+		hasMadeBet: false,
+		bet: { }
+	};
+
+	this.defineObservableProperties(_backingFields, {
+		cid: { set: false }
+	});
 };

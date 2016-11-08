@@ -1,9 +1,9 @@
 var PlayersList = function() {
-    
-    var _pokerTableSvc = DI.resolve("PokerTableSvc");
-    var _app = DI.resolve("app");
 
-    Observable.call(this);
+    this.pokerTableSvc = DI.resolve(PokerTableSvc);
+    this.app = DI.resolve(App);
+
+    Observable.mixin(this);
     Indexed.call(this);
 
     var _this = this;
@@ -27,30 +27,30 @@ var PlayersList = function() {
     /**
      * Subscribe to hasMadeBet event to update players status
      */
-    _pokerTableSvc.hasMadeBet(function(cid) {
+    _this.pokerTableSvc.hasMadeBet(function(cid) {
         var player = _this.get(cid);
         if (player) {
             player.hasMadeBet = true;
-        } 
+        }
     });
 
     /**
      * Server notifies if some other player has joined the table
      */
-    _pokerTableSvc.playerJoined(_addPlayer);
+    _this.pokerTableSvc.playerJoined(_addPlayer);
 
     /**
      * Remove player from list
      */
-    _pokerTableSvc.playerLeft(function(cid) {
+    _this.pokerTableSvc.playerLeft(function(cid) {
         var player = _players[cid];
         _this.publish("remove", player);
     });
 
     /**
-     * 
+     *
      */
-    _pokerTableSvc.turn(function (bets) {
+    _this.pokerTableSvc.turn(function (bets) {
         for (var cid in bets) {
             _players[cid].bet = bets[cid];
         }
@@ -59,7 +59,7 @@ var PlayersList = function() {
 
     this.load = function () {
 
-        _pokerTableSvc.server.getPlayers()
+        _this.pokerTableSvc.server.getPlayers()
             .done(function(players) {
                 for (var i in players) {
                     if (players.hasOwnProperty(i)) {
@@ -71,25 +71,24 @@ var PlayersList = function() {
 };
 
 
-var PlayersListView = function (playersList, context) {
-    
+var PlayersListView = function (playersList) {
+
     var _ul;
     var _itemsViews = {};
-    var _outerDomContext = context;
 
-    this.init = function () {
+    this.init = function (context) {
 
-        _ul = _("#players", _outerDomContext);
+        _ul = _("#players", context);
 
-        // load template 
+        // load template
         var _el_itemTemplate = _(".template", _ul);
         _ul.removeChild(_el_itemTemplate);
         _el_itemTemplate.classList.remove("template");
         var itemTemplate = _el_itemTemplate.outerHTML;
-        
-        playersList.on("add", function (player) {
 
-            // create player view                    
+        playersList.subscribe("add", function (player) {
+
+            // create player view
             var li = parseHtml(itemTemplate);
             if (player.hasMadeBet) {
                 li.classList.add("ready");
@@ -100,12 +99,12 @@ var PlayersListView = function (playersList, context) {
                 el_playerName: _(".name", li),
                 el_bet: _(".bet", li)
             };
-            
+
             _itemsViews[player.cid] = view;
-            
+
             // init
             view.el_playerName.innerHTML = player.name;
-            
+
             // update DOM on property changed event
             player
                 .propertyChanged("name", function (val) {
@@ -125,28 +124,28 @@ var PlayersListView = function (playersList, context) {
 
             _ul.appendChild(li);
         });
-        
-        playersList.on("remove", function (player) {
+
+        playersList.subscribe("remove", function (player) {
             if (player) {
                 var view = _itemsViews[player.cid];
                 _ul.removeChild(view.li);
             }
         });
-        
-        playersList.on("turn", function () {
-            _ul.classList.add("turn");                    
+
+        playersList.subscribe("turn", function () {
+            _ul.classList.add("turn");
         });
-        
-        playersList.on("clearBets", function () {
-            _ul.classList.remove("turn");                    
+
+        playersList.subscribe("clearBets", function () {
+            _ul.classList.remove("turn");
         });
-    };    
+    };
 
     this.render = function () {
 
         //await( this.loadTemplate("/views/playersList.html") );
 
-        var template = '\
+        var html = '\
             Players \
             <ul id="players"> \
                 <li class="template"> \
@@ -155,17 +154,8 @@ var PlayersListView = function (playersList, context) {
                 </li> \
             </ul>';
 
-        return template;
+        var r = Re.render2(html);
+        return r.dom;
     };
 
 };
-
-
-PlayersListView.template = '\
-Players \
-<ul id="players"> \
-    <li class="template"> \
-        <span class="name"></span> \
-        <span class="bet"></span> \
-    </li> \
-</ul>';
