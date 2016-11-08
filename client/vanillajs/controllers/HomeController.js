@@ -1,18 +1,18 @@
 var HomeController = (function HomeController() {
-    
+
     Controller.call(this);
 
-    var _pokerTableSvc = DI.resolve("PokerTableSvc");
-    var _app = DI.resolve("app");
+    this.pokerTableSvc = PokerTableSvc;
+    this.app = App;
 
-    // var _indexView = DI.resolve("views.home.index");
+    var _this = this;
 
     this.join = function (model) {
-        
-        _pokerTableSvc.server.join(model.name)
+
+        _this.pokerTableSvc.server.join(model.name)
             .then(function () {
-                _app.joined = true;
-                _app.navigateToAction("index", "table")
+                _this.app.joined = true;
+                _this.app.navigateToAction("index", "table")
             });
     };
 
@@ -24,9 +24,9 @@ var HomeController = (function HomeController() {
         return this.__partial();
     };
 
-    // ALT2 
+    // ALT2
     // this.index = function () {
     //     return this.__partial("index");
     // };
-    
+
 }).extends(Controller);

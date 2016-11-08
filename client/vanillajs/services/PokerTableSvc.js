@@ -1,15 +1,14 @@
-(function () {
-
+(function (w) {
 
     function PokerTableSvc() {
 
         var _this = this;
-        Observable.call(this);
+        Observable.mixin(this);
 
         var _pokerTableHub = $.connection.pokerTable;
 
          // Start the connection
-        var hub = $.connection.hub;
+        var _hub = $.connection.hub;
 
         Object.defineProperties(this, {
             client: {
@@ -24,27 +23,29 @@
             },
             hub: {
                 get: function () {
-                    return hub;
+                    return _hub;
                 }
             }
         });
 
-        var _regClientCallback = function  (cbName) {
+        var _regClientCallback = function (cbName) {
             _pokerTableHub.client[cbName] = function () {
-                _this.applyPublish(cbName, arguments);
+				var args = Array.prototype.slice.call(arguments);
+				Array.prototype.unshift.call(args, cbName);
+                _this.publish.apply(_this, args);
             };
 
             _this[cbName] = function (handler) {
-                _this.on(cbName, handler);
-            }
-        }
+                _this.subscribe(cbName, handler);
+            };
+        };
 
         _regClientCallback("hasMadeBet");
         _regClientCallback("playerJoined");
         _regClientCallback("playerLeft");
         _regClientCallback("turn");
-    };
+    }
 
-    DI.register(PokerTableSvc, DI.singleton);
-    
-})();
+	w.PokerTableSvc = PokerTableSvc;
+
+})(window);

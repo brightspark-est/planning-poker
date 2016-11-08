@@ -1,0 +1,11 @@
+{
+  "description": "Demo app for sparkling libraries",
+  "dependencies": {
+    "@brightspark/sparkling-ajax-js": "^1.0.2",
+    "@brightspark/sparkling-app-js": "^0.1.0",
+    "@brightspark/sparkling-indexed-js": "^1.0.0",
+    "@brightspark/sparkling-inject-js": "^1.1.0",
+    "@brightspark/sparkling-observable-js": "^1.0.4",
+    "@brightspark/sparkling-observable-js-property-changed-ext": "^1.0.2"
+  }
+}

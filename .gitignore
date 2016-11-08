@@ -5,3 +5,4 @@ server/packages/
 *.user
 server/.vs/config/applicationhost.config
 .vscode/settings.json
+client/vanillajs/node_modules/

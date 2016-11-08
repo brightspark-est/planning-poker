@@ -4,82 +4,164 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Planning Poker</title>
-        
-        <link rel="stylesheet" type="text/css" href="style.css" />
-        
-        
+
+        <link rel="stylesheet" type="text/css" href="content/style.css" />
+
+
         <!-- jQuery is only for signalR -->
         <script src="http://localhost/PlanningPoker.Server/Scripts/jquery-1.10.2.min.js"></script>
         <script src="http://localhost/PlanningPoker.Server/Scripts/jquery.signalR-2.2.0.min.js"></script>
         <script src="http://localhost/PlanningPoker.Server/signalr/hubs"></script>
+
         <script src="core.js"></script>
-        <script src="app.js"></script>
+
+        <script src="node_modules/@brightspark/sparkling-app-js/sparkling-app.min.js"></script>
+        <script src="node_modules/@brightspark/sparkling-inject-js/sparkling-inject.min.js"></script>
+
+		<script src="node_modules/@brightspark/sparkling-observable-js/sparkling-observable.min.js"></script>
+
+		<script src="node_modules/@brightspark/sparkling-indexed-js/sparkling-indexed.min.js"></script>
+		<script src="node_modules/@brightspark/sparkling-ajax-js/sparkling-ajax.min.js"></script>
+
+		<script src="node_modules/@brightspark/sparkling-observable-js-property-changed-ext/sparkling-observable-property-changed-ext.min.js"></script>
+
+        <script src="RenderEngine.js"></script>
+		<script src="NS.js"></script>
+
+        <script type="text/javascript">
+
+			var App = sparkling.App;
+			var DI = new sparkling.Inject.Container();
+			var Observable = sparkling.Observable;
+			var Indexed = sparkling.Indexed;
+
+            var PlanningPoker = {};
+            NS.init(PlanningPoker);
+        </script>
+
+
+
+        <script src="services/PokerTableSvc.js"></script>
+
+        <script src="controllers/ControllerBase.js"></script>
+        <script src="controllers/HomeController.js"></script>
+        <script src="controllers/TableController.js"></script>
+
+        <script src="views/home/index.js"></script>
+        <script src="views/home/table.js"></script>
+
+        <script src="components/Hand.js"></script>
+        <script src="components/Card.js"></script>
+        <script src="components/PlayersList.js"></script>
+        <script src="components/Player.js"></script>
     </head>
 
     <body>
 
-        <div id="page1">        
-            <form id="join-form">
+        <header>
 
-                <input type="text" id="name"/>
-                <button type="submit">Join</button>
+        </header>
 
-            </form>
+        <div id="body-section">
         </div>
 
-        <div id="page2">
-            Players
-            <ul id="players">
-                <li class="template">
-                    <span class="name"></span>
-                    <span class="bet"></span>
-                </li>
-            </ul>
+        <footer>
 
-            <div id="hand">
+        </footer>
 
-                <li class="template card-template"></li>
-                
-                <ul class="low">
-                    <li>0</li>
-                    <li>1/2</li>
-                    <li>1</li>
-                    <li>2</li>
-                    <li>3</li>
-                    <li>5</li>
-                    <li>8</li>
-                </ul>
-
-                <ul class="high">
-                    <li>13</li>
-                    <li>20</li>
-                    <li>40</li>
-                    <li>100</li>
-                    <li>?</li>
-                    <li>&#x221e;</li>
-                </ul>
-
-                <ul class="stress-test"></li>
-            </div>
-
-            <button id="reset">Reset</button>
-            <button id="create-cards">Create more cards</button>
-        </div>
-        
         <script type="text/javascript">
 
-            app.start();
+            (function (pp) {
 
-        // // Start the connection
-        // $.connection.hub
-        //     .start()
-        //     .then(function () {
+                var app = new App({
+                    virtualDirectory: '/planning.poker.vanillajs',
+                    body: _("#body-section"),
+                    routes: [
+                        {
+                            name: "home",
+                            pattern: "/index.html",
+                            defaults: { lang: "en", controller: "Home", action: "index" }
+                        },
+                        {
+                            name: "play",
+                            pattern: "/play.html",
+                            defaults: { lang: "en", controller: "Table", action: "index" }
+                        },
+                        {
+                            name: "default-with-language",
+                            pattern: "/:lang/:controller?/:action?/:id?",
+                            defaults: { controller: "Home", action: "index" },
+                            constraints: {
+                                lang: function (val) {
+                                    return (val || "").length == 2;
+                                }
+                            }
+                        },
+                        {
+                            name: "default",
+                            pattern: "/:controller?/:action?/:id?",
+                            defaults: { lang: "en", controller: "Home", action: "index" }
+                        }
+                    ]
+                });
 
-        //         alert("connected");
+                app.use(function (next, config) {
+                    // if not joined, redirect to home
+                    if (this.routeData.name != "home" && !this.joined) {
+                        this.navigateToRoute("home");
+                        return;
+                    }
 
-        //     });
+                    next();
+                });
+
+                app.use(App.actionHandler);
+
+                //#region DI
+
+                DI.register(App, function () {
+                    return app;
+                });
+
+                DI.registerWithName("controller.home", HomeController, DI.singleton);
+                DI.registerWithName("controller.table", TableController, DI.singleton);
+
+                DI.registerWithName("component.playersList", PlayersList, DI.transient);
+                DI.registerWithName("component.playersList.view", PlayersListView, DI.transient);
+
+                DI.registerWithName("component.hand", Hand, DI.transient);
+                DI.registerWithName("component.hand.view", HandView, DI.transient);
+
+                //#endregion
+
+                Re.componentFactory = new (function () {
+                    this.create = function (name) {
+                        return DI.resolve("component." + name);
+                    };
+
+                    this.createView = function (name, component, DOMcontext)  {
+                        return DI.resolve("component." + name + ".view", component, DOMcontext);
+                    };
+                });
+
+                app.controllerFactory = new (function () {
+                    this.create = function (name) {
+                        return DI.resolve("controller." + name);
+                    }
+                });
+
+    			DI.register(PokerTableSvc, DI.singleton);
+
+                // Start the connection and then start app
+                DI.resolve("PokerTableSvc").hub
+                    .start()
+                    .then(function () {
+                        app.start(window.location.pathname);
+                    });
+
+            })(PlanningPoker);
 
         </script>
-        
+
     </body>
 </html>
