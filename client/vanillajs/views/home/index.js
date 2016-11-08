@@ -2,80 +2,36 @@ NS("views.home", function () {
 
     this.index = function (model) {
         
-        var _this = this;
         var _model = model;
+        var template = '\
+            <div class="join">\
+                <h1>Planning Poker</h1>\
+                <form id="join-form" action="">\
+                    <input type="text" id="name" />\
+                    <button type="submit">Join</button>\
+                </form>\
+            </div>';
 
-        var _domContext;
+        var viewModel = {};
+        var t = new sparkling.Template(template, viewModel, init);
 
-        var _el_joinform;    
-        var _el_name;
+        function init() {
 
-        /**
-         * 
-         */
-        var _init = function () {
+            var _el_joinform = this.get("#join-form");
+            var _el_name = this.get("#name", _el_joinform);
 
-            _el_joinform = _("#join-form", _domContext);
-            _el_name = _("#name", _el_joinform);
-
-            _el_joinform.addEventListener("submit", function(e) {
+            this.bind("#join-form", "submit", function (e, scope) {
                 e.preventDefault();
                 _model.join({name: _el_name.value});
-            });    
+            });
         }
 
         /**
          * 
          */
         this.render = function () {
-            var template = '<h1>Planning Poker</h1>\
-                    <form id="join-form" action="">\
-                        <input type="text" id="name"/>\
-                        <button type="submit">Join</button>\
-                    </form>';
-
-            var res = Re.render(template);
-
-            return res;
+            return t.dom.childNodes;
         };
 
-        // /**
-        //  * 
-        //  */
-        // this.render = function () {
-
-        //     if (!_domContext) 
-        //     {
-        //         // note - markup can be fetched from server, inline (like current sample) or created manually
-        //         var html = '\
-        //             <h1>Planning Poker</h1> \
-        //             <form id="join-form" action=""> \
-        //                 <input type="text" id="name"/> \
-        //                 <button type="submit">Join</button> \
-        //             </form>';
-
-        //         _domContext = document.createElement("div");
-        //         _domContext.className = "join";
-        //         _domContext.innerHTML = html;
-
-        //         _init();
-        //     }
-
-        //     return _domContext;
-        // }
     };
 });
-
-
-// // Re -----------
-// // GENERATED GODE
-// // do not modify. changes will be overridden
-// NS("views.home.index").template = 
-// '<h1>Planning Poker</h1>\
-// \
-// <form id="join-form" action="">\
-// \
-//     <input type="text" id="name"/>\
-//     <button type="submit">Join</button>\
-// \
-// </form>';

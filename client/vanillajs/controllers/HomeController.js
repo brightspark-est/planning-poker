@@ -21,7 +21,7 @@ var HomeController = (function HomeController() {
      */
     this.index = function index() {
         // note that function has also name
-        return this.__partial();
+        return this.__partial("/views/home/index");
     };
 
     // ALT2

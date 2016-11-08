@@ -24,9 +24,11 @@
 		<script src="node_modules/@brightspark/sparkling-ajax-js/sparkling-ajax.min.js"></script>
 
 		<script src="node_modules/@brightspark/sparkling-observable-js-property-changed-ext/sparkling-observable-property-changed-ext.min.js"></script>
+        <script src="node_modules/@brightspark/sparkling-template-js/sparkling-template.js"></script>
 
-        <script src="RenderEngine.js"></script>
-		<script src="NS.js"></script>
+        <!--<script src="_fw/RenderEngine.js"></script>-->
+		<script src="_fw/NS.js"></script>
+        <script src="_fw/ControllerBase.js"></script>
 
         <script type="text/javascript">
 
@@ -34,6 +36,16 @@
 			var DI = new sparkling.Inject.Container();
 			var Observable = sparkling.Observable;
 			var Indexed = sparkling.Indexed;
+
+            sparkling.Template.tag("spx:action", function (node) {
+
+                var actionName = node.getAttribute("name");
+                var controllerName = node.getAttribute("controller");
+
+                // todo - use controllerfactory
+                var controller = DI.resolve("controller." + controllerName);
+                return controller[actionName]().render();
+            });
 
             var PlanningPoker = {};
             NS.init(PlanningPoker);
@@ -43,14 +55,15 @@
 
         <script src="services/PokerTableSvc.js"></script>
 
-        <script src="controllers/ControllerBase.js"></script>
+        
         <script src="controllers/HomeController.js"></script>
         <script src="controllers/TableController.js"></script>
+        <script src="controllers/HandController.js"></script>
 
         <script src="views/home/index.js"></script>
-        <script src="views/home/table.js"></script>
+        <script src="views/table/index.js"></script>
+        <script src="views/hand/index.js"></script>
 
-        <script src="components/Hand.js"></script>
         <script src="components/Card.js"></script>
         <script src="components/PlayersList.js"></script>
         <script src="components/Player.js"></script>
@@ -125,24 +138,22 @@
 
                 DI.registerWithName("controller.home", HomeController, DI.singleton);
                 DI.registerWithName("controller.table", TableController, DI.singleton);
+                DI.registerWithName("controller.hand", HandController, DI.singleton);
 
                 DI.registerWithName("component.playersList", PlayersList, DI.transient);
                 DI.registerWithName("component.playersList.view", PlayersListView, DI.transient);
 
-                DI.registerWithName("component.hand", Hand, DI.transient);
-                DI.registerWithName("component.hand.view", HandView, DI.transient);
-
                 //#endregion
 
-                Re.componentFactory = new (function () {
-                    this.create = function (name) {
-                        return DI.resolve("component." + name);
-                    };
+                // Re.componentFactory = new (function () {
+                //     this.create = function (name) {
+                //         return DI.resolve("component." + name);
+                //     };
 
-                    this.createView = function (name, component, DOMcontext)  {
-                        return DI.resolve("component." + name + ".view", component, DOMcontext);
-                    };
-                });
+                //     this.createView = function (name, component, DOMcontext)  {
+                //         return DI.resolve("component." + name + ".view", component, DOMcontext);
+                //     };
+                // });
 
                 app.controllerFactory = new (function () {
                     this.create = function (name) {

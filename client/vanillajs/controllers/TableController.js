@@ -6,7 +6,7 @@ var TableController = (function TableController() {
      * Render poker table
      */
     this.index = function () {
-        return this.__partial("/views/home/table");
-    }
+        return this.__partial("/views/table/index");
+    };
 
 }).extends(Controller);
