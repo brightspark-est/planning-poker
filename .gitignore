@@ -4,3 +4,4 @@ server/PlanningPoker.Server/obj/
 server/packages/
 *.user
 server/.vs/config/applicationhost.config
+.vscode/settings.json
