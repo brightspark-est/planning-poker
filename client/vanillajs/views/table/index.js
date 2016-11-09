@@ -5,7 +5,7 @@ NS("views.table", function () {
         var template = '\
             <div class="table">\
                 <div id="players-list-container">\
-                    <spx:partial name="PlayersList" />\
+                    <spx:action name="index" controller="players" />\
                 </div>\
                 <div id="hand">\
                     <spx:action name="index" controller="Hand" />\
@@ -15,7 +15,7 @@ NS("views.table", function () {
         var t = new sparkling.Template(template);
 
         this.render = function () {
-            return t.dom.childNodes;
+            return t.dom;
         };
     };
 });

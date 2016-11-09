@@ -49,8 +49,7 @@ NS("views.hand", function () {
         }
 
         this.render = function () {
-            // t.render();
-            return t.dom.childNodes;
+            return t.dom;
         };
     };
 });

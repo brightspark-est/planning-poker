@@ -1,7 +1,7 @@
 NS("views.home", function () {
 
     this.index = function (model) {
-        
+
         var _model = model;
         var template = '\
             <div class="join">\
@@ -27,10 +27,10 @@ NS("views.home", function () {
         }
 
         /**
-         * 
+         *
          */
         this.render = function () {
-            return t.dom.childNodes;
+            return t.dom;
         };
 
     };

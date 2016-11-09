@@ -1,7 +1,7 @@
-
 (function (w) {
 
     var _scope = w;
+    var _nsInited = false;
 
     /**
      * Require object from given namespace
@@ -13,36 +13,39 @@
         var segments = ns.split(".");
         for (var i = 0; i < segments.length; i++) {
             var name = segments[i];
-            if (!(name in ref)) {
-                ref[name] = {};
-            }
+
+			if (!ref.hasOwnProperty(name)) {
+				ref[name] = {};
+			}
+
             ref = ref[name];
         }
 
         return ref;
     };
 
-    w.NS = function NS(nsString, f) {
+    function NS(nsString, f) {
         var ns = require(nsString);
         f.call(ns);
-    };
+    }
 
-    w.NS.require = require;
+    NS.require = require;
 
-    var nsInited = false;
     /**
      * Set scope.
      * window if not defined
      */
-    w.NS.init = function (scope) {
+    NS.init = function (scope) {
 
-        if (nsInited) {
+        if (_nsInited) {
             console.error("NS already initialized");
             return;
         }
 
         _scope = scope;
-        nsInited = true;
-    }
+        _nsInited = true;
+    };
+
+	w.NS = NS;
 
 })(window);

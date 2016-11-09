@@ -26,7 +26,6 @@
 		<script src="node_modules/@brightspark/sparkling-observable-js-property-changed-ext/sparkling-observable-property-changed-ext.min.js"></script>
         <script src="node_modules/@brightspark/sparkling-template-js/sparkling-template.js"></script>
 
-        <!--<script src="_fw/RenderEngine.js"></script>-->
 		<script src="_fw/NS.js"></script>
         <script src="_fw/ControllerBase.js"></script>
 
@@ -37,50 +36,30 @@
 			var Observable = sparkling.Observable;
 			var Indexed = sparkling.Indexed;
 
-            sparkling.Template.tag("spx:action", function (node) {
-
-                var actionName = node.getAttribute("name");
-                var controllerName = node.getAttribute("controller");
-
-                // todo - use controllerfactory
-                var controller = DI.resolve("controller." + controllerName);
-                return controller[actionName]().render();
-            });
-
             var PlanningPoker = {};
             NS.init(PlanningPoker);
         </script>
 
-
-
         <script src="services/PokerTableSvc.js"></script>
 
-        
         <script src="controllers/HomeController.js"></script>
         <script src="controllers/TableController.js"></script>
         <script src="controllers/HandController.js"></script>
+		<script src="controllers/PlayersController.js"></script>
 
         <script src="views/home/index.js"></script>
         <script src="views/table/index.js"></script>
         <script src="views/hand/index.js"></script>
+		<script src="views/players/index.js"></script>
 
         <script src="components/Card.js"></script>
-        <script src="components/PlayersList.js"></script>
         <script src="components/Player.js"></script>
     </head>
 
     <body>
-
-        <header>
-
-        </header>
-
-        <div id="body-section">
-        </div>
-
-        <footer>
-
-        </footer>
+        <header></header>
+        <div id="body-section"></div>
+        <footer></footer>
 
         <script type="text/javascript">
 
@@ -130,38 +109,38 @@
 
                 app.use(App.actionHandler);
 
-                //#region DI
-
-                DI.register(App, function () {
-                    return app;
-                });
-
-                DI.registerWithName("controller.home", HomeController, DI.singleton);
-                DI.registerWithName("controller.table", TableController, DI.singleton);
-                DI.registerWithName("controller.hand", HandController, DI.singleton);
-
-                DI.registerWithName("component.playersList", PlayersList, DI.transient);
-                DI.registerWithName("component.playersList.view", PlayersListView, DI.transient);
-
-                //#endregion
-
-                // Re.componentFactory = new (function () {
-                //     this.create = function (name) {
-                //         return DI.resolve("component." + name);
-                //     };
-
-                //     this.createView = function (name, component, DOMcontext)  {
-                //         return DI.resolve("component." + name + ".view", component, DOMcontext);
-                //     };
-                // });
-
                 app.controllerFactory = new (function () {
                     this.create = function (name) {
-                        return DI.resolve("controller." + name);
+                        var controller = DI.resolve("controller." + name);
+						controller.__setup();
+						return controller;
                     }
                 });
 
-    			DI.register(PokerTableSvc, DI.singleton);
+				sparkling.Template.tag("spx:action", function (node) {
+
+					var actionName = node.getAttribute("name");
+					var controllerName = node.getAttribute("controller");
+
+					var controller = app.controllerFactory.create(controllerName);
+					return controller[actionName]().render();
+				});
+
+				(function installContainer() {
+
+					DI.register(App, function () {
+						return app;
+					});
+
+					// todo - refactor. get all controllers from namespace
+					DI.registerWithName("controller.home", HomeController, DI.singleton);
+					DI.registerWithName("controller.table", TableController, DI.singleton);
+					DI.registerWithName("controller.hand", HandController, DI.singleton);
+					DI.registerWithName("controller.players", PlayersController, DI.singleton);
+
+					DI.register(PokerTableSvc, DI.singleton);
+
+				})();
 
                 // Start the connection and then start app
                 DI.resolve("PokerTableSvc").hub

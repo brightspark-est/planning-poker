@@ -6,7 +6,7 @@ var Player = function(cid, name) {
 		cid: cid,
 		name: name,
 		hasMadeBet: false,
-		bet: { }
+		bet: undefined
 	};
 
 	this.defineObservableProperties(_backingFields, {

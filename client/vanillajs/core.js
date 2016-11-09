@@ -6,15 +6,15 @@ var _ = function(selector, el) {
     return (el || document).querySelector(selector);
 };
 
-var _id = function (id) {
-    return document.getElementById(id);
-};
+// var _id = function (id) {
+//     return document.getElementById(id);
+// };
 
-var parseHtmlHelper = document.createElement("div");
-var parseHtml = function(html) {
-    parseHtmlHelper.innerHTML = html;
-    return parseHtmlHelper.firstElementChild;
-};
+// var parseHtmlHelper = document.createElement("div");
+// var parseHtml = function(html) {
+//     parseHtmlHelper.innerHTML = html;
+//     return parseHtmlHelper.firstElementChild;
+// };
 
 var serializeForm = function (form) {
     var data = {};
