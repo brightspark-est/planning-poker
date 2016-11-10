@@ -21,21 +21,6 @@ NS("views.hand", function () {
             cardsHigh: cards.filter(function (x, i) { return i > 6 })
         };
 
-        var t = new sparkling.Template(template, viewModel, init);
-        // todo
-        // t.each("cardsLow.card", function(dom, card, scope) {
-        //     var li = dom.querySelector("li");
-        //     card.propertyChanged("selected", function (selected) {
-        //         if (card.selected) {
-        //             li.classList.add("selected");
-        //         }
-        //         else{
-        //             li.classList.remove("selected");
-        //         }
-        //     });
-        // });
-        // t.init = init;
-
         function init() {
 
             this.bind("li", "click", function (e, scope) {
@@ -47,6 +32,25 @@ NS("views.hand", function () {
                 hand.reset();
             });
         }
+
+		function eachCard(card, dom) {
+			var li = dom.querySelector("li");
+			card.propertyChanged("selected", function (selected) {
+				if (card.selected) {
+					li.classList.add("selected");
+				}
+				else{
+					li.classList.remove("selected");
+				}
+			});
+		}
+
+		init.each = {
+			"cardsLow": eachCard,
+			"cardsHigh": eachCard
+		};
+
+        var t = new sparkling.Template(template, viewModel, init);
 
         this.render = function () {
             return t.dom;

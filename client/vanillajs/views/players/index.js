@@ -7,54 +7,54 @@ NS("views.players", function () {
 			<ul id="players"> \
 				<spx:each val="player" in="players">\
 				<li> \
-					<span class="name">{{player.value.name}}</span> \
-					<span class="bet">{{player.value.bet}}</span> \
+					<span class="name">{{player.name}}</span> \
+					<span class="bet">{{player.bet}}</span> \
 				</li> \
 				</spx:each> \
 			</ul>';
 
 
 		var viewModel = {
-			players: { }
+			players: []
 		};
-
-        var t = new sparkling.Template(template, viewModel, init);
 
 		function init() {
 
-			var el_ul = this.get("#players");
+			var elPlayersList = this.get("#players");
 
 			playersList.subscribe("add", function (player) {
-
-				viewModel.players[player.cid] = player;
-				t.update();
-
-				// player.propertyChanged("hasMadeBet", function (val) {
-				// 	if (val) {
-				// 		view.li.classList.add("ready");
-				// 	}
-				// 	else {
-				// 		view.li.classList.remove("ready");
-				// 	}
-				// });
-
+				viewModel.players.push(player);
 			});
 
 			playersList.subscribe("remove", function (player) {
-				if (player) {
-					// delete viewModel[player.cid];
-				}
+				viewModel.players.remove(player);
 			});
 
 			playersList.subscribe("turn", function () {
-				el_ul.classList.add("turn");
+				elPlayersList.classList.add("turn");
 			});
 
 			playersList.subscribe("clearBets", function () {
-				el_ul.classList.remove("turn");
+				elPlayersList.classList.remove("turn");
 			});
-
 		}
+
+		init.each = {
+			"players": function (player, dom) {
+				var li = dom.querySelector("li");
+
+				player.propertyChanged("hasMadeBet", function (val) {
+					if (val) {
+						li.classList.add("ready");
+					}
+					else {
+						li.classList.remove("ready");
+					}
+				});
+			}
+		};
+
+        var t = new sparkling.Template(template, viewModel, init);
 
         this.render = function () {
             return t.dom;
