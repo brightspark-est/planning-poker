@@ -1,32 +1,31 @@
-var HomeController = (function HomeController() {
+NS("controllers", function () {
 
-    Controller.call(this);
+	this.home = function HomeController() {
 
-    this.pokerTableSvc = PokerTableSvc;
-    this.app = App;
+		ControllerBase.call(this);
 
-    var _this = this;
+		this.pokerTableSvc = PokerTableSvc;
+		this.app = App;
 
-    this.join = function (model) {
+		var _this = this;
 
-        _this.pokerTableSvc.server.join(model.name)
-            .then(function () {
-                _this.app.joined = true;
-                _this.app.navigateToAction("index", "table")
-            });
-    };
+		this.join = function (model) {
 
-    /**
-     * Render join form
-     */
-    this.index = function index() {
-        // note that function has also name
-        return this.__partial("/views/home/index");
-    };
+			_this.pokerTableSvc.server.join(model.name)
+				.then(function () {
+					_this.app.joined = true;
+					_this.app.navigateToAction("index", "table");
+				});
+		};
 
-    // ALT2
-    // this.index = function () {
-    //     return this.__partial("index");
-    // };
+		/**
+		 * Render join form
+		 */
+		this.index = function index() {
+			// note that function has also name
+			return this.__view("/views/home/index");
+		};
+	};
 
-}).extends(Controller);
+	this.home.extends(ControllerBase);
+});

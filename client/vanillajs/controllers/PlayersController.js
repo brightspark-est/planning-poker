@@ -79,4 +79,4 @@ var PlayersController = (function PlayersController() {
         _this.publish("add", player);
     }
 
-}).extends(Controller);
+}).extends(sparkling.ControllerBase);

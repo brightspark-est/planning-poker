@@ -15,7 +15,8 @@
 
         <script src="core.js"></script>
 
-        <script src="node_modules/@brightspark/sparkling-app-js/sparkling-app.min.js"></script>
+        <script src="node_modules/@brightspark/sparkling-app-js/sparkling-app.js"></script>
+		<script src="node_modules/@brightspark/sparkling-app-js/ControllerBase.js"></script>
         <script src="node_modules/@brightspark/sparkling-inject-js/sparkling-inject.js"></script>
 
 		<script src="node_modules/@brightspark/sparkling-observable-js/sparkling-observable.min.js"></script>
@@ -28,7 +29,6 @@
         <script src="node_modules/@brightspark/sparkling-template-js/sparkling-template.js"></script>
 
 		<script src="_fw/NS.js"></script>
-        <script src="_fw/ControllerBase.js"></script>
 
         <script type="text/javascript">
 
@@ -36,6 +36,7 @@
 			var DI = new sparkling.Inject.Container();
 			var Observable = sparkling.Observable;
 			var Indexed = sparkling.Indexed;
+			var ControllerBase = sparkling.ControllerBase;
 
             var PlanningPoker = {};
             NS.init(PlanningPoker);
@@ -108,15 +109,36 @@
                     next();
                 });
 
-                app.use(App.actionHandler);
+                app.use(App.defaultActionHandler);
 
                 app.controllerFactory = new (function () {
                     this.create = function (name) {
-                        var controller = DI.resolve("controller." + name);
+                        var controller = DI.resolve("controllers." + name);
 						controller.__setup();
 						return controller;
                     }
                 });
+
+				sparkling.ControllerBase.viewFactory = new (function () {
+
+					var registry = {};
+
+					this.create = function (viewName, controller) {
+
+						if (viewName.charAt("0") !== "/") {
+							var controllerName = controller.constructor.name.toLowerCase().replace("controller", "");
+							viewName = "/views/" + controllerName + "/" + viewName;
+						}
+
+						var key = viewName.slice(1).replace(/\//g, ".");
+						var view = DI.resolve(key, controller);
+						return view;
+					};
+
+					function capitalizeFirstLetter(s) {
+						return s.charAt(0).toUpperCase() + s.slice(1);
+					}
+				})();
 
 				sparkling.Template.tag("spx:action", function (node) {
 
@@ -133,13 +155,14 @@
 						return app;
 					});
 
-					// todo - refactor. get all controllers from namespace
-					DI.registerWithName("controller.home", HomeController, DI.singleton);
-					DI.registerWithName("controller.table", TableController, DI.singleton);
-					DI.registerWithName("controller.hand", HandController, DI.singleton);
-					DI.registerWithName("controller.players", PlayersController, DI.singleton);
+					var views = NS.getTypesFrom("views", "controllers", "services");
+					for (var i in views) {
+						if (views.hasOwnProperty(i)) {
+							DI.registerWithName(i, views[i]);
+						}
+					}
 
-					DI.register(PokerTableSvc, DI.singleton);
+					DI.register(PokerTableSvc);
 
 				})();
 

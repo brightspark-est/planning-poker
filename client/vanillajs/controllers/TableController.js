@@ -1,5 +1,5 @@
 var TableController = (function TableController() {
-    
+
     Controller.call(this);
 
     /**
@@ -9,4 +9,4 @@ var TableController = (function TableController() {
         return this.__partial("/views/table/index");
     };
 
-}).extends(Controller);
+}).extends(sparkling.ControllerBase);

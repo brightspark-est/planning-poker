@@ -46,6 +46,56 @@
         _nsInited = true;
     };
 
+	function regNamedObjects(target, rootPath, root) {
+
+		for (var i in root) {
+
+			if (!root.hasOwnProperty(i)){
+				continue;
+			}
+
+			var object = root[i];
+			var constructorName = object.constructor.name;
+			if (constructorName === "Function") {
+				constructorName = i;
+			}
+
+			if (constructorName && constructorName !== "Object") {
+				target[rootPath + "." + constructorName] = object;
+			}
+			else {
+				regNamedObjects(target, rootPath + "." + i, object);
+			}
+		}
+	}
+
+	function regNamespace(target, ns) {
+
+		var scope = _scope;
+		var segments = ns.split(".");
+        for (var i = 0; i < segments.length; i++) {
+            var name = segments[i];
+
+			if (!scope.hasOwnProperty(name)) {
+				// invalid namespace
+				return {};
+			}
+
+            scope = scope[name];
+        }
+
+		regNamedObjects(target, ns, scope);
+	}
+
+	NS.getTypesFrom = function (namespaces) {
+
+		var ret = {};
+		for (var i = 0; i < arguments.length; i++) {
+			regNamespace(ret, arguments[i]);
+		}
+		return ret;
+	};
+
 	w.NS = NS;
 
 })(window);

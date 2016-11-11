@@ -1,5 +1,7 @@
 NS("views.table", function () {
 
+	var indexDom;
+
     this.index = function () {
 
         var template = '\
@@ -12,10 +14,6 @@ NS("views.table", function () {
                 </div>\
             </div>';
 
-        var t = new sparkling.Template(template);
-
-        this.render = function () {
-            return t.dom;
-        };
+        return indexDom || (indexDom = new sparkling.View(template));
     };
 });
