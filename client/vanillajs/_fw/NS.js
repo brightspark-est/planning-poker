@@ -3,27 +3,6 @@
     var _scope = w;
     var _nsInited = false;
 
-    /**
-     * Require object from given namespace
-     */
-    var require = function (ns) {
-
-        var ref = _scope;
-
-        var segments = ns.split(".");
-        for (var i = 0; i < segments.length; i++) {
-            var name = segments[i];
-
-			if (!ref.hasOwnProperty(name)) {
-				ref[name] = {};
-			}
-
-            ref = ref[name];
-        }
-
-        return ref;
-    };
-
     function NS(nsString, f) {
         var ns = require(nsString);
         f.call(ns);
@@ -44,6 +23,40 @@
 
         _scope = scope;
         _nsInited = true;
+    };
+
+	/**
+	 * Get all types from given namespaces
+	 */
+	NS.getTypesFrom = function (namespaces) {
+
+		var ret = {};
+		for (var i = 0; i < arguments.length; i++) {
+			var namespace = arguments[i];
+			regNamespace(ret, namespace);
+		}
+		return ret;
+	};
+
+	/**
+     * Require object from given namespace
+     */
+    function require(ns) {
+
+        var ref = _scope;
+
+        var segments = ns.split(".");
+        for (var i = 0; i < segments.length; i++) {
+            var name = segments[i];
+
+			if (!ref.hasOwnProperty(name)) {
+				ref[name] = {};
+			}
+
+            ref = ref[name];
+        }
+
+        return ref;
     };
 
 	function regNamedObjects(target, rootPath, root) {
@@ -86,15 +99,6 @@
 
 		regNamedObjects(target, ns, scope);
 	}
-
-	NS.getTypesFrom = function (namespaces) {
-
-		var ret = {};
-		for (var i = 0; i < arguments.length; i++) {
-			regNamespace(ret, arguments[i]);
-		}
-		return ret;
-	};
 
 	w.NS = NS;
 
