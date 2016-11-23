@@ -1,12 +1,18 @@
-var TableController = (function TableController() {
+NS("controllers", function () {
 
-    Controller.call(this);
+    this.table = function TableController() {
 
-    /**
-     * Render poker table
-     */
-    this.index = function () {
-        return this.__partial("/views/table/index");
+        ControllerBase.call(this);
+
+        /**
+         * Render poker table
+         */
+        this.index = function () {
+            return this.__view("/views/table/index");
+        };
+
     };
 
-}).extends(sparkling.ControllerBase);
+    this.table.extends(ControllerBase);
+
+});

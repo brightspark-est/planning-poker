@@ -1,6 +1,11 @@
 NS("views.players", function () {
 
+	var controllers = NS.require("controllers");
+
 	this.index = function (playersList) {
+
+		var _view = this;
+		_view.playersController = controllers.players;
 
 		var template = '\
 			Players \
@@ -22,19 +27,19 @@ NS("views.players", function () {
 
 			var elPlayersList = this.get("#players");
 
-			playersList.subscribe("add", function (player) {
+			_view.playersController.subscribe("add", function (player) {
 				viewModel.players.push(player);
 			});
 
-			playersList.subscribe("remove", function (player) {
+			_view.playersController.subscribe("remove", function (player) {
 				viewModel.players.remove(player);
 			});
 
-			playersList.subscribe("turn", function () {
+			_view.playersController.subscribe("turn", function () {
 				elPlayersList.classList.add("turn");
 			});
 
-			playersList.subscribe("clearBets", function () {
+			_view.playersController.subscribe("clearBets", function () {
 				elPlayersList.classList.remove("turn");
 			});
 		}
@@ -54,12 +59,9 @@ NS("views.players", function () {
 			}
 		};
 
-        var t = new sparkling.Template(template, viewModel, init);
-
-        this.render = function () {
-            return t.dom;
-        };
-
+		this.__construct = function () {
+	        _view.template = new sparkling.Template(template, viewModel, init);
+		};
 	};
 
 });

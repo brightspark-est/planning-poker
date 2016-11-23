@@ -4,7 +4,7 @@ NS("views.table", function () {
 
     this.index = function () {
 
-        var template = '\
+        var markup = '\
             <div class="table">\
                 <div id="players-list-container">\
                     <spx:action name="index" controller="players" />\
@@ -14,6 +14,6 @@ NS("views.table", function () {
                 </div>\
             </div>';
 
-        return indexDom || (indexDom = new sparkling.View(template));
+		this.template = new sparkling.Template(markup);
     };
 });

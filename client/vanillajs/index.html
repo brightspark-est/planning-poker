@@ -109,17 +109,51 @@
                     next();
                 });
 
-                app.use(App.defaultActionHandler);
+                app.use(function (next, config) {
+
+                    config.body.innerHTML = "";
+
+                    var controller = this.controllerFactory.create(this.routeData.parameters.controller);
+                    controller.__setup();
+                    // todo - controller.__construct();
+
+                    var actionName = this.routeData.parameters.action;
+                    var action = ControllerBase.getAction(controller, actionName);
+
+                    var actionResult;
+                    if (!action) {
+                        if (controller.unknownAction) {
+                            actionResult = controller.unknownAction(actionName);
+                        }
+                    }
+                    else {
+                        actionResult = action.call(controller, this.routeData.requestParameters);
+                    }
+
+                    // here starts actual action result handling
+
+                    if (actionResult instanceof NodeList) {
+                        while (actionResult.length) {
+                            config.body.appendChild(actionResult[0]);
+                        }
+                    }
+                    else if (actionResult instanceof HTMLElement) {
+                        config.body.appendChild(actionResult);
+                    }
+                    else {
+                        config.body.innerHTML = actionResult;
+                    }
+
+                    next();
+                });
 
                 app.controllerFactory = new (function () {
                     this.create = function (name) {
-                        var controller = DI.resolve("controllers." + name);
-						controller.__setup();
-						return controller;
-                    }
+                        return DI.resolve(name + "controller");
+                    };
                 });
 
-				sparkling.ControllerBase.viewFactory = new (function () {
+				ControllerBase.viewFactory = new (function () {
 
 					var registry = {};
 
@@ -131,8 +165,11 @@
 						}
 
 						var key = viewName.slice(1).replace(/\//g, ".");
-						var view = DI.resolve(key, controller);
-						return view;
+						var view = DI.resolve(key);
+                        if (typeof view.__construct === "function") {
+                            view.__construct();
+                        }
+						return view.template.dom;
 					};
 
 					function capitalizeFirstLetter(s) {
@@ -146,7 +183,7 @@
 					var controllerName = node.getAttribute("controller");
 
 					var controller = app.controllerFactory.create(controllerName);
-					return controller[actionName]().render();
+					return controller[actionName]();
 				});
 
 				(function installContainer() {
@@ -155,10 +192,17 @@
 						return app;
 					});
 
-					var views = NS.getTypesFrom("views", "controllers", "services");
-					for (var i in views) {
+                    var views = NS.getTypesFrom("views");
+                    for (var i in views) {
 						if (views.hasOwnProperty(i)) {
 							DI.registerWithName(i, views[i]);
+						}
+					}
+
+					var components = NS.getTypesFrom("controllers", "services");
+					for (var i in components) {
+						if (components.hasOwnProperty(i)) {
+							DI.register(components[i]);
 						}
 					}
 
@@ -167,7 +211,7 @@
 				})();
 
                 // Start the connection and then start app
-                DI.resolve("PokerTableSvc").hub
+                DI.resolve(PokerTableSvc).hub
                     .start()
                     .then(function () {
                         app.start(window.location.pathname);

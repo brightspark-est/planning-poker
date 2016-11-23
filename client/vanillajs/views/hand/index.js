@@ -1,6 +1,11 @@
 NS("views.hand", function () {
 
+	var controllers = NS.require("controllers");
+
     this.index = function (hand) {
+
+		var _view = this;
+		_view.handController = controllers.hand;
 
         var template = '\
         	<ul class="low">\
@@ -14,12 +19,6 @@ NS("views.hand", function () {
         		</spx:each> \
         	</ul> \
         	<button id="reset">Reset</button>';
-
-        var cards = hand.cards;
-        var viewModel = {
-            cardsLow: cards.filter(function (x, i) { return i <= 6 }),
-            cardsHigh: cards.filter(function (x, i) { return i > 6 })
-        };
 
         function init() {
 
@@ -50,10 +49,16 @@ NS("views.hand", function () {
 			"cardsHigh": eachCard
 		};
 
-        var t = new sparkling.Template(template, viewModel, init);
+		this.__construct = function () {
 
-        this.render = function () {
-            return t.dom;
-        };
+			var cards = _view.handController.getCards();
+			var viewModel = {
+				cardsLow: cards.filter(function (x, i) { return i <= 6 }),
+				cardsHigh: cards.filter(function (x, i) { return i > 6 })
+			};
+
+			_view.template = new sparkling.Template(template, viewModel, init);
+		};
+		
     };
 });

@@ -4,9 +4,10 @@ NS("views.home", function () {
 
     this.index = function () {
 
-		var homeController = controllers.home;
+        var _view = this;
+		_view.homeController = controllers.home;
 
-        var template = '\
+        var markup = '\
             <div class="join">\
                 <h1>Planning Poker</h1>\
                 <form id="join-form" action="">\
@@ -24,10 +25,10 @@ NS("views.home", function () {
 
             this.bind("#join-form", "submit", function (e, scope) {
                 e.preventDefault();
-                homeController.join({name: _el_name.value});
+                _view.homeController.join({name: _el_name.value});
             });
         }
 
-		return new sparkling.View(template, viewModel, init);
+		this.template = new sparkling.Template(markup, viewModel, init);
     };
 });

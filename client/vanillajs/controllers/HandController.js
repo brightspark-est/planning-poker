@@ -17,11 +17,9 @@ NS("controllers", function () {
 
 		var CARD_NUMBERS = ["0", "1/2", "1", "2", "3", "5", "8", "13", "20", "40", "100", "?", "∞"];
 
-		Object.defineProperty(_this, "cards", {
-			get: function () {
-				return Object.values(_cards);
-			}
-		});
+		this.getCards = function () {
+			return Object.values(_cards);
+		};
 
 		/**
 		 *
@@ -76,7 +74,7 @@ NS("controllers", function () {
 		};
 
 		this.index = function () {
-			return this.__partial("/views/hand/index");
+			return this.__view("/views/hand/index");
 		};
 
 		for (var i = 0; i < CARD_NUMBERS.length; i++){
